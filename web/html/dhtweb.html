@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  	<meta charset="utf-8">
+ 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+   	<meta http-equiv="refresh" content="60" />
+  	<meta id="viewport" name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+ 	<script src="/javascript/jquery-1.11.3.min.js"></script>
+	<script type="text/javascript">	
+	
+function run(){
+		console.log("10"); 
+		$( "#header" ).load( "www.maumoto.it", function( response, status, xhr ) {
+ 			if ( status == "error" ) {
+   			 var msg = "Sorry but there was an error: ";
+    		console.log( msg + xhr.status + " " + xhr.statusText );
+  }
+});
+		} 
+	</script>
+</head> 
+
+  <body onload="run()"> 
+    <div id="header" align = "center">
+	 	<!--<iframe src=@@dhtconn@@ height="600px" width="800px" style="align:0 auto;border:none">
+	</iframe> -->
+	<br></br>
+	
+	</script>
+
+
+	<form action="/">
+    	<input type="submit" value="Thermostat Home " />
+	</form>
+</body> 
+
+</html>

@@ -1,0 +1,113 @@
+{
+    "calibration": {
+    	"boilingMeasured": 99.998043,
+    	"elevation": 50,
+    	"freezingMeasured": 0.0,
+		"correctSensor":-0.5
+    },
+    "logging": {
+        "channel": "file",
+        "level": "error"
+    },
+	"dhtout": {
+		"dhtoutEnabled":1,
+		"dhtoutIP":"192.168.10.123"
+	},
+    "dhtext": {
+    	"dhtClientIP": "192.168.10.123",
+    	"dhtEnabled": 1,
+		"dhtTimeout" : 20,
+		"dhtCorrect" : 0
+    },
+    "pir": {
+        "pirCheckInterval": 0.5,
+        "pirEnabled": 0,
+        "pirIgnoreFrom": "00:00",
+        "pirIgnoreTo": "00:00",
+        "pirPin": 5
+    },
+    "scale": {
+        "tempScale": "metric"
+    },
+    "thermostat": {
+        "lightPin": 24,
+        "heatPin": 27,
+        "coolPin": 18,
+        "maxTemp": 30.0,
+        "minTemp": 15.0,
+        "minUIEnabled": 1,
+        "minUITimeout": 30,
+        "tempCheckInterval": 5,
+        "tempHysteresis": 0.3,
+        "tempStep": 0.5,
+		"tempice": 16,
+		"lightOff": 40,
+		"user" : "a",
+		"pass" : "a",
+		"saveCsv": 300,
+		"openDoor":300
+    },
+    "weather": {
+        "appkey": "key for darksky",
+        "forecastRefreshInterval": 60,
+        "location": "44.110921, 9.963725",
+        "weatherExceptionInterval": 5,
+        "weatherRefreshInterval": 60,
+        "URLtimeout": 5
+    },
+    "web": {
+        "host": "discover",
+        "port": 80
+    },
+    "dht_zone":{
+    	"number":1,
+    	"zone_interval" : 30,
+    	"zone_name_1" : "camera 1",
+    	"zone_ip_1": "192.168.10.123",
+    	"zone_name_2" : "sala 1",
+    	"zone_ip_2": "192.168.1.111",
+    	"zone_name_3" : "camera 2",
+    	"zone_ip_3": "192.168.1.111",
+    	"zone_name_4" : "sala 2",
+    	"zone_ip_4": "192.168.1.111",
+    	"zone_name_5" : "camera 3",
+    	"zone_ip_5": "192.168.1.111",
+    	"zone_name_6" : "sala 3",
+    	"zone_ip_6": "192.168.1.111",
+    	"zone_name_7" : "camera 4",
+    	"zone_ip_7": "192.168.1.111",
+    	"zone_name_8" : "sala 4",
+    	"zone_ip_8": "192.168.1.111",
+    	"zone_name_9" : "camera 5",
+    	"zone_ip_9": "192.168.1.111"
+    },
+    "dht_ir":{
+    	"number": 1,
+    	"zoneir_interval" : 30,
+    	"zoneir_name_1" : "zona salotto",
+    	"zoneir_ip_1": "192.168.10.123",
+    	"zoneir_name_2" : "zona camera",
+    	"zoneir_ip_2": "192.168.1.111",
+    	"zoneir_name_3" : "zona sala",
+    	"zoneir_ip_3": "192.168.1.111",
+    	"zoneir_name_4" : "zona camera bimbo",
+    	"zoneir_ip_4": "192.168.1.111",
+    	"zoneir_name_5" : "zona salotto3",
+    	"zoneir_ip_5": "192.168.1.111",
+    	"zoneir_name_6" : "zona camera3",
+    	"zoneir_ip_6": "192.168.1.111",
+    	"zoneir_name_7" : "zona camera bimbo2",
+    	"zoneir_ip_7": "192.168.1.111",
+    	"zoneir_name_8" : "zona salotto4",
+    	"zoneir_ip_8": "192.168.1.111",
+    	"zoneir_name_9" : "zona camera4",
+    	"zoneir_ip_9": "192.168.1.111"
+    },
+    "dht_rele":{
+    	"rele_enabled": 0,
+    	"rele_ip": "192.168.1.111",
+    	"rele_timeout": 20
+    	}	
+    	
+    	
+}
