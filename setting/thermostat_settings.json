@@ -11,10 +11,10 @@
     },
 	"dhtout": {
 		"dhtoutEnabled":1,
-		"dhtoutIP":"192.168.10.123"
+		"dhtoutIP":"192.168.1.123"
 	},
     "dhtext": {
-    	"dhtClientIP": "192.168.10.123",
+    	"dhtClientIP": "192.168.1.123",
     	"dhtEnabled": 1,
 		"dhtTimeout" : 20,
 		"dhtCorrect" : 0
@@ -48,7 +48,7 @@
 		"openDoor":300
     },
     "weather": {
-        "appkey": "key for darksky",
+        "appkey": "darksky key",
         "forecastRefreshInterval": 60,
         "location": "44.110921, 9.963725",
         "weatherExceptionInterval": 5,
@@ -60,38 +60,38 @@
         "port": 80
     },
     "dht_zone":{
-    	"number":1,
+    	"number":2,
     	"zone_interval" : 30,
     	"zone_name_1" : "camera 1",
-    	"zone_ip_1": "192.168.10.123",
+    	"zone_ip_1": "192.168.1.123",
     	"zone_name_2" : "sala 1",
-    	"zone_ip_2": "192.168.1.111",
+    	"zone_ip_2": "192.168.1.123",
     	"zone_name_3" : "camera 2",
-    	"zone_ip_3": "192.168.1.111",
+    	"zone_ip_3": "192.168.1.123",
     	"zone_name_4" : "sala 2",
-    	"zone_ip_4": "192.168.1.111",
+    	"zone_ip_4": "192.168.1.123",
     	"zone_name_5" : "camera 3",
-    	"zone_ip_5": "192.168.1.111",
+    	"zone_ip_5": "192.168.1.123",
     	"zone_name_6" : "sala 3",
-    	"zone_ip_6": "192.168.1.111",
+    	"zone_ip_6": "192.168.1.123",
     	"zone_name_7" : "camera 4",
-    	"zone_ip_7": "192.168.1.111",
+    	"zone_ip_7": "192.168.1.123",
     	"zone_name_8" : "sala 4",
-    	"zone_ip_8": "192.168.1.111",
+    	"zone_ip_8": "192.168.1.123",
     	"zone_name_9" : "camera 5",
-    	"zone_ip_9": "192.168.1.111"
+    	"zone_ip_9": "192.168.1.123"
     },
     "dht_ir":{
     	"number": 1,
     	"zoneir_interval" : 30,
     	"zoneir_name_1" : "zona salotto",
-    	"zoneir_ip_1": "192.168.10.123",
+    	"zoneir_ip_1": "192.168.1.123",
     	"zoneir_name_2" : "zona camera",
-    	"zoneir_ip_2": "192.168.1.111",
+    	"zoneir_ip_2": "192.168.1.123",
     	"zoneir_name_3" : "zona sala",
-    	"zoneir_ip_3": "192.168.1.111",
+    	"zoneir_ip_3": "192.168.1.123",
     	"zoneir_name_4" : "zona camera bimbo",
-    	"zoneir_ip_4": "192.168.1.111",
+    	"zoneir_ip_4": "192.168.1.123",
     	"zoneir_name_5" : "zona salotto3",
     	"zoneir_ip_5": "192.168.1.111",
     	"zoneir_name_6" : "zona camera3",

@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  	<meta charset="utf-8">
+ 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+   	<meta http-equiv="refresh" content="60" />
+  	<meta id="viewport" name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+ 	<script src="/javascript/jquery-1.11.3.min.js"></script>
+	<script type="text/javascript">	
+	function redir(clicked_id) {
+       		window.location = "/redirect/"+clicked_id;
+    		}
+
+	
+	</script>
+</head> 
+    	<table width="550px" rules="none" cellpadding="10" cellspacing="0" align="center" style="align:0 auto">
+    		<tr>
+			<td width="20%" align="center"><img src="../images/logo.png" width="50px" height="50px"></td>
+			<td width = "45%" align="center" style="color:#111111"><b>Thermostat @@version@@</b><br>@@dt@@</td>
+			<td width ="35%">@@status@@</td>								
+		</tr>
+	</table>
+    	<table width="600px" align="center" border = "1" style= "align:0 auto">
+    		<tr height= "150px">
+    			<td id="0" onclick="redir(this.id)"  width="33%"  @@zone_name0@@>@@zone0@@</td>
+    			<td id="1" onclick="redir(this.id)"  width="33%"  @@zone_name1@@>@@zone1@@</td>
+    			<td id="2" onclick="redir(this.id)"  width="33%"  @@zone_name2@@>@@zone2@@</td>
+    		</tr><tr  height= "150px">
+    			<td id="3" onclick="redir(this.id)"  width="33%"  @@zone_name3@@>@@zone3@@</td>
+    			<td id="4" onclick="redir(this.id)"  width="33%"  @@zone_name4@@>@@zone4@@</td>
+    			<td id="5" onclick="redir(this.id)"  width="33%"  @@zone_name5@@>@@zone5@@</td>
+    		</tr><tr  height= "150px">
+    			<td id="6" onclick="redir(this.id)"  width="33%"  @@zone_name6@@>@@zone6@@</td>
+    			<td id="7" onclick="redir(this.id)"  width="33%"  @@zone_name7@@>@@zone7@@</td>
+    			<td id="8" onclick="redir(this.id)"  width="33%"  @@zone_name8@@>@@zone8@@</td>
+    		</tr>	
+	</table>	
+	<table width="500px" align="center" style= "align:0 auto">
+		<td width="33%"></td>
+		<td width="33%">
+			<form action="/">
+    			<input type="submit" value="Thermostat Home " />
+		</form>
+		</td>
+		<td width="33%"></td>
+	</table>
+</body> 
+
+</html>

@@ -479,7 +479,7 @@ dht_label		= Label( text= " ",size_hint = (None,None), font_size = '25sp', marku
 dhtTest			= 0
 dhtSchedule     	= 0
 dhtCorrect		= 0 if not( settings.exists( "dhtext") ) else settings.get("dhtext" )[ "dhtCorrect" ]
-dhtweb 			= "http://" + settings.get( "dhtext" )[ "dhtClientIP" ] + "/"
+dhtweb 			= "http://" + settings.get( "dhtext" )[ "dhtClientIP" ] 
 
 def get_dht( url ):
 		return json.loads( urllib2.urlopen( url, None, 5 ).read() )
@@ -550,7 +550,7 @@ def dhtIrRead(dt):
 				dhtIR[c,6]=dhtirread["S_setTemp"]
 				dhtCheck = dhtirread["S_control"]
 				labelState = "ON" if (dhtCheck == 1) else  "OFF"
-				dhtIRLabel[c,0].text =  "[b]  - "+dhtIR[c,2] + "[/b] - \n \n Ip: " + dhtIR[c,1] +"\n temp : "+ str(dhtIR[c,3]) + "\n Umidita : " +str(dhtIR[c,4])+ "% \n set Temp : " +str(dhtIR[c,6])+"\n Stato : " + labelState
+				dhtIRLabel[c,0].text =  "[b]  - "+dhtIR[c,2] + "[/b] - \n \n " + dhtIR[c,1] +"\n temp : "+ str(dhtIR[c,3]) + "\n Umidita : " +str(dhtIR[c,4])+ "% \n set Temp : " +str(dhtIR[c,6])+"\n Stato : " + labelState
 				#print "ir read :", dhtIR[c,2],dhtCheck,dhtIRLabel[0,0].text
 			except:
 				#print "Ir read error ", dhtIR[c,2]
@@ -589,7 +589,7 @@ def dhtZoneRead(dt):
 				dhtZone[c,6]=dhtzoneread["S_setTemp"]
 				dhtCheck = dhtzoneread["S_control"]
 				labelState = "ON" if (dhtCheck == 3) else  "OFF"
-				dhtZoneLabel[c,0].text =  "[b]  - "+dhtZone[c,2] + "[/b] - \n \n Ip: " + dhtZone[c,1] +"\n temp : "+ str(dhtZone[c,3]) + "\n Umidita : " +str(dhtZone[c,4])+ "% \n set Temp : " +str(dhtZone[c,6])+"\n Stato : " + labelState
+				dhtZoneLabel[c,0].text =  "[b]  - "+dhtZone[c,2] + "[/b] - \n \n " + dhtZone[c,1] +"\n temp : "+ str(dhtZone[c,3]) + "\n Umidita : " +str(dhtZone[c,4])+ "% \n set Temp : " +str(dhtZone[c,6])+"\n Stato : " + labelState
 				#print "Zone read :", dhtZone[c,2], dhtCheck
 			except:
 				print "Zone read error ",dhtZone[c,2]
@@ -875,7 +875,7 @@ def display_current_weather( dt ):
 			for c in range(0,3):
 				today    = weather[ "daily" ]["data"][ c ]
 				#print weatherURLCurrent
-				forecastData[c].text = time.strftime('%A  %d/%m ', time.localtime(today["time"]))
+				forecastData[c].text = "[b]"+time.strftime('%A  %d/%m ', time.localtime(today["time"]))+"[/b]"
 				forecastImg[c].source = "web/images/" + today[ "icon" ] + ".png" 
 				forecastSummaryLabel[c].text =  "[b]"+ today["summary"][:-1]+"[/b] "	
 				forecastText = "\n".join( (
@@ -1485,7 +1485,7 @@ class ThermostatApp( App ):
 			forecastSummaryLabel[c].pos = ( d+40,220 )
 			forecastDetailsLabel[c].pos = ( d+70 ,110)
 			d += 260
-		forecastSummary.pos = (400,410)
+		forecastSummary.pos = (360,410)
 
 		# Add the UI elements to the thermostat UI layout:
 		thermostatUI.add_widget( wimg )
@@ -1856,6 +1856,7 @@ class WebInterface(object):
 
 	@cherrypy.expose
 	@cherrypy.tools.json_in()
+	
 	def save( self ):
 		log( LOG_LEVEL_STATE, CHILD_DEVICE_WEBSERVER, MSG_SUBTYPE_TEXT, "Set schedule received from: " + cherrypy.request.remote.ip )	
 		schedule = cherrypy.request.json
@@ -1883,7 +1884,7 @@ class WebInterface(object):
 		
 	@cherrypy.expose
 	def graph( self ):	
-		log( LOG_LEVEL_INFO, CHILD_DEVICE_WEBSERVER, MSG_SUBTYPE_TEXT, "grah.html to: " + cherrypy.request.remote.ip )			
+		log( LOG_LEVEL_INFO, CHILD_DEVICE_WEBSERVER, MSG_SUBTYPE_TEXT, "graph.html to: " + cherrypy.request.remote.ip )			
 		file = open( "web/html/graph.html", "r" )
 
 		html = file.read()
@@ -1891,47 +1892,116 @@ class WebInterface(object):
 		file.close()
 		
 		return html
+		
+		
+	@cherrypy.expose
+	def zonedht( self , ipdht = ""):	
+		log( LOG_LEVEL_INFO, CHILD_DEVICE_WEBSERVER, MSG_SUBTYPE_TEXT, "zone.html to: " + cherrypy.request.remote.ip )			
+		print "ip DHT: ", ipdht
+		file = open( "web/html/zone.html", "r" )
+
+		html = file.read()
+
+		file.close()
+		with thermostatLock:	
+			
+			html = html.replace( "@@version@@", str( THERMOSTAT_VERSION ) )
+			html = html.replace( "@@dt@@", dateLabel.text.replace( "[b]", "<b>" ).replace( "[/b]", "</b>" ) + ", " + timeLabel.text.replace( "[b]", "<b>" ).replace( "[/b]", "</b>" ) )
+			status = statusLabel.text.replace( "[b]", "<b>" ).replace( "[/b]", "</b>" ).replace("[/color]","</font>").replace("[color=ff3333]","<font color=\"red\">").replace("[i]","<i>").replace("[/i]","</i>").replace( "\n", "<br>" )
+			status = status.replace( "[color=00ff00]", '<font color="red">' ).replace( "[/color]", '</font>' ) 
+	
+			html = html.replace( "@@status@@", status )
+			for c in range (0 , 9):
+				if(c < dhtZone_number):
+					zone = dhtZoneLabel[c,0].text.replace( "[b]", "<b>" ).replace( "[/b]", "</b>" ).replace("[/color]","</font>").replace("[color=ff3333]","<font color=\"red\">").replace("[i]","<i>").replace("[/i]","</i>").replace( "\n", "<br>" )
+					zone = zone.replace( "[color=00ff00]", '<font color="red">' ).replace( "[/color]", '</font>' ) 
+					zone_name = "@@zone"+str(c)+"@@"
+					html = html.replace( zone_name , zone )
+				else:
+					zone_name = "@@zone_name"+str(c)+"@@"
+					zone = "@@zone"+str(c)+"@@"
+					html = html.replace( zone_name , "style=\"display:none\"" )
+					html = html.replace( zone , "" )
+		
+		return html
 	
 	@cherrypy.expose
-	def redirect(self):
+	def irdht( self , ipdht = ""):	
+		log( LOG_LEVEL_INFO, CHILD_DEVICE_WEBSERVER, MSG_SUBTYPE_TEXT, "ir.html to: " + cherrypy.request.remote.ip )			
+		file = open( "web/html/ir.html", "r" )
+
+		html = file.read()
+
+		file.close()
+		with thermostatLock:	
+			
+			html = html.replace( "@@version@@", str( THERMOSTAT_VERSION ) )
+			html = html.replace( "@@dt@@", dateLabel.text.replace( "[b]", "<b>" ).replace( "[/b]", "</b>" ) + ", " + timeLabel.text.replace( "[b]", "<b>" ).replace( "[/b]", "</b>" ) )
+			status = statusLabel.text.replace( "[b]", "<b>" ).replace( "[/b]", "</b>" ).replace("[/color]","</font>").replace("[color=ff3333]","<font color=\"red\">").replace("[i]","<i>").replace("[/i]","</i>").replace( "\n", "<br>" )
+			status = status.replace( "[color=00ff00]", '<font color="red">' ).replace( "[/color]", '</font>' ) 
+	
+			html = html.replace( "@@status@@", status )
+			for c in range (0 , 9):
+				if(c < dhtIr_number):
+					zone = dhtIRLabel[c,0].text.replace( "[b]", "<b>" ).replace( "[/b]", "</b>" ).replace("[/color]","</font>").replace("[color=ff3333]","<font color=\"red\">").replace("[i]","<i>").replace("[/i]","</i>").replace( "\n", "<br>" )
+					zone = zone.replace( "[color=00ff00]", '<font color="red">' ).replace( "[/color]", '</font>' ) 
+					zone_name = "@@zone_name"+str(c)+"@@"
+					zone_name1 = "@@zone"+str(c)+"@@"
+					html = html.replace( zone_name , "" )
+					html = html.replace( zone_name1 , zone )
+					
+				else:
+					zone_name = "@@zone_name"+str(c)+"@@"
+					zone = "@@zone"+str(c)+"@@"
+					html = html.replace( zone_name , "style=\"display:none\"" )
+					html = html.replace( zone , "" )
+		
+		return html	
+		
+	@cherrypy.expose
+	def redirect(self, ipdht = ""):
 		global dhtweb
-
-		#file =  open( "web/html/dhtweb.html", "r" )
-
-		f = urllib2.urlopen(dhtweb,None,5)
-
-		#file.close
-
-		#html = html.replace( "@@dhtconn@@", str( dhtweb ) )
+		global send_ip
+		if (int(ipdht)== 99):
+			send_ip = dhtweb
+		else:
+			if ( int(ipdht) >= 10):
+				send_ip = dhtIR[int(ipdht)-10,1]
+			else:	
+				send_ip = dhtZone[int(ipdht),1]
+		
+		f = urllib2.urlopen(send_ip+"/",None,5)
 
 		return f
 
 	@cherrypy.expose
 	def grafico(self):
-		global dhtweb
-
-		#file =  open( "web/html/dhtweb.html", "r" )
-
-		f = urllib2.urlopen(dhtweb+"grafico",None,5)
-
-		#file.close
-
-		#html = html.replace( "@@dhtconn@@", str( dhtweb ) )
+		f = urllib2.urlopen(send_ip+"/grafico",None,5)
 
 		return f
 
 	@cherrypy.expose
 	
 	def tabella(self):
-		global dhtweb
+		f = urllib2.urlopen(send_ip+"/tabella",None,5)
 
-		#file =  open( "web/html/dhtweb.html", "r" )
+		return f
+		
+	@cherrypy.expose	
+	def irDecoder(self):
+		f = urllib2.urlopen(send_ip+"/irDecoder",None,5)
 
-		f = urllib2.urlopen(dhtweb+"tabella",None,5)
+		return f
+		
+	@cherrypy.expose
+	def irSender(self):
+		f = urllib2.urlopen(send_ip+"/irSender",None,5)
 
-		#file.close
-
-		#html = html.replace( "@@dhtconn@@", str( dhtweb ) )
+		return f
+	
+	@cherrypy.expose
+	def zone(self):
+		f = urllib2.urlopen(send_ip+"/zone",None,5)
 
 		return f
 

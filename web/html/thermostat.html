@@ -168,13 +168,16 @@
 	label.button span {
 	  	display:inline-block; width:10px; height:10px; margin-right:4px;	
 	}
-	input[type="submit"]:hover{background-color: #F3AC25;}
+	input[type="submit"]:hover{background-color: #ff0000; color:#ffffff}
 	input[type="submit"] {
-		height:50px;
+		height:75px;
 		width:40px;
+		color:#FF0000;
+		font-size:18px;
+		background-color:#b6bd88;
 		text-align:center;
 		valign:center;
-		-webkit-border-radius:5px; -moz-border-radius:5px; border-radius:5px;
+		-webkit-border-radius:10px; -moz-border-radius:10px; border-radius:10px;
 	}
 <!-- 	#set{width:80px;} -->
 /*----- Toggle Button -----*/
@@ -231,13 +234,13 @@
 <body >
 	<div align="center">
 		<form method="post" action="set">
-		  	<table width="500px" rules="none" cellpadding="10" cellspacing="0" >
+		  	<table width="550px" rules="none" cellpadding="10" cellspacing="0" >
 				<tr>
-					<td width="30%" align="center"><img src="../images/logo.png" width="50px" height="50px">&nbsp;&nbsp;</td>
-					<td align="center" style="color:#111111"><b>Thermostat @@version@@</b><br>@@dt@@</td>
-					<td>					
-						<div style=" width:140px; height:60px;color:#000000; background-color:#fff">@@status@@</div>
-					</td>				
+					<td width="20%" align="center"><img src="../images/logo.png" width="50px" height="50px"></td>
+					<td width = "45%" align="center" style="color:#111111"><b>Thermostat @@version@@</b><br>@@dt@@</td>
+					<td width ="35%">@@status@@</td>					
+					<!--	<div style=" width:140px; height:60px;color:#000000; background-color:#fff"></div>
+					</td>	-->			
 				</tr>
 				<tr>
 				<input type="hidden" id="temp" name="temp" readonly style=" color:#ff0000; font-weight:bold; font-size:x-large; width: 2em; " size="4" >
@@ -249,9 +252,9 @@
         					<li class="current-item"><a href="#">Home</a></li>
         					<li><a href="/schedule">Schedule</a></li>
         					<li><a href="/graph">Grafico</a></li>
-        					<li><a href="/redirect" @@dhtsubmit@@ >Dht</a></li>
-        					<li><a href="#" @@dhtIrsubmit@@ >Dht Ir</a></li>
-        					<li><a href="#" @@dhtZonesubmit@@ >Dht Zone</a></li>
+        					<li><a href="/redirect/99" @@dhtsubmit@@ >Dht</a></li>
+        					<li><a href="irdht" @@dhtIrsubmit@@ >Dht Ir</a></li>
+        					<li><a href="zonedht" @@dhtZonesubmit@@ >Dht Zone</a></li>
     					</ul>    				
 					</nav>
 			</table>
@@ -295,8 +298,8 @@
 					<label for="holdButton" related="holdButton" class="green">Manuale</label>
 					<input type="checkbox"  id="holdButton" related="holdButton" name="hold" value="on"  />
 				</td>
-				<td  valign="center" width="13%">
-					&nbsp;<input id="set"  type="submit" value="Set">
+				<td  valign="center" width="13%" style="vertical-align:middle;">
+					<input id="set"  type="submit" value="Set" >
 							
 				</tr>
 			</table>
