@@ -171,7 +171,7 @@ L'interfaccia minimale (screensaver) è abilitata di default. Questo modo ti per
 
 Opzionalmente si può usare un sensore PIR di rilevazione di movimento da usare come switch per riattivare il display se dovesse rilevare qualcuno. Questa funzione è disattivata di defualt, ma si può abilitare nel file delle impostazioni
 
-Se vuoi usare il sensore PIR, puoi anche specifica un eventuale lasso di orario in cui ignorare il sensore. Questa opzione è utile per animali domestici quando non ci sei a casa o per evitare che nelle ore notturne si accenda se ci passi davanti.
+Se vuoi usare il sensore PIR, puoi anche specifica un eventuale lasso di orario in cui ignorare il sensore. Questa opzione è utile per animali domestici quando non ci sei a casa o per evitare che nelle ore notturne si accenda se ci passi davanti
 
 
 ##Logging:
@@ -191,8 +191,7 @@ Include i seguenti livelli di log:
 	info  - Log dettagliato di informazioni e settaggi (tanta roba!)
 	debug - Log di informazioni di debug (veramente tantissima roba!)
 
-Ogni livello di log include anche tutte le informazioni del livello precedente. Per esempio il livello info include anche tutte le informazioni del livello state e del livello error.
-.
+Ogni livello di log include anche tutte le informazioni del livello precedente. Per esempio il livello info include anche tutte le informazioni del livello state e del livello error
 
 
 ##Credits:
