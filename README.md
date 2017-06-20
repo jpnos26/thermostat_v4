@@ -1,210 +1,211 @@
-# Raspberry Pi Thermostat Implementation
+# Raspberry Pi - Cronotermostato
 
-Author: 	Jpnos
+Autore: 	Jpnos
 Email:		jpnos at gmx dot com
-License:	MIT
+Licenza:	MIT
 
-**THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.**
+
+**IL SOFTWARE È FORNITO "COSI COM'È".SENZA GARANZIA DI NESSUN TIPO, ESPRESSA O IMPLICITA. NESSUNA RESPONSIBILITA PUO ESSERE IMPUTATA PER DANNI A COSE, PERSONE, HARDWARE E SOFTWARE ALL'AUTORE DI QUESTO PROGETTO**
 
 -----------------------------------------------------------------------------------------------------------------------------------------
 
-This project is a fairly comprehensive implementation of a Thermostat for a Raspberry Pi, designed to run on 5" Touch Sensitive LCD screen. 
+Thermostat e un crono-termostato su  Raspberry Pi v2B o v3 giunto alla v4 , progettato per funzionare su uno schermo LCD touch da 5" HDMI. 
 
-Key features include:
+Caratteristiche incluse:
 
-	1. Touch senstive thermostat display/control for 5" Touch Sensitive LCD screen.
-	2. Schedule support, including daily schedules for Heat 
-	3. Built in web interface/server to enable control of thermostat and edit schedule remotely through any browser (including touch-sensitive iOS devices)
-	4. Today/tomorrow weather forecasts using openweathermap.org
-	5. The implementation will run on non-Pi linux machines (eg. Ubuntu) for testing purposes, using simulated GPIO and a fixed current temperature
-	6. Battery backup (optional)
-	7. Supports Celcius (default) or Farenheit
-	8. Supports calibration of your temperature sensor
-	9. Minimal UI (screensaver) mode
-	10. Detailed logging with selectable levels, including graph of data
-	11. Security Access to web interface
-	12. Inteface for Oregon Scientific EMR211 to control and correct temperature
+	1. Termostato visualizzabile e controllabile da display touch LCD da 5"
+	2. Supporto alla programmazione con una schedulazione giornaliera e oraria della temperatura solo via web
+	3. Inferfaccia web inclusa per controllare tutto il sistema attraverso qualsiasi browser
+	4. Previsioni del tempo giornaliera e di tre giorni con provider DarkSky(richiedere sul sito la relativa chiave)
+	5. Tutto il software può funzionare anche su una macchina con linux (es.ubuntu) utilizzando un modulo per il rele wifi e il sensore wifi per la temperatura
+	6. Batteria di backup (optional)
+	7. Supporto Celsius (default) o Farenheit
+	8. Supporto alla calibrazione del sensore di temperatura
+	9  Modalità Salvaschermo con informazioni minime
+	10. Log degli eventi dettagliato con livelli selezionabili di dettaglio, incluso grafico dei dati
+	11. Possibilita di spegnimento dello Schermo
+	12. Possibilità di avere via wifi il controllo di condizionatori e zone comandate da valvole di zona
+	13. Completa il progetto DHT_Logger nelle varie versioni
 
-###Thermostat User Interface
+###Termostato Interfaccia Utente
 
-**Thermostat UI on Touch Screen:**
+**Termostato Interfaccia con Touch Screen:**
 
-![Thermostat - Touch Screen](resources/thermostat.png)
+![Termostato - Touch Screen](resources/thermostat_touch.png)
 
-**Thermostat min UI - Settings:**
+**Termostato Interfaccia minimale:**
 
-![Thermostat - Touch Screen](resources/thermostat_minUI.png)
+![Termostato - Touch Screen](resources/thermostat_minui.png)
 
-**Thermostat Web UI - Settings:**
+**Termostato Interfaccia Web:**
 
-![Thermostat - Web UI](resources/thermostat_web.png)
-
-
-**Thermostat Web UI - Edit Schedule:**
-
-![Thermostat Edit Schedule - Web UI](resources/thermostat_schedule.jpg)
-
-**Note**: *Double click/tap on a blank space in the schedule to create a new entry*
+![Termostato - Web UI](resources/thermostat_web.png)
 
 
+**Termostato Web - Modifica Programmazione:**
+
+![Termostato Edit Schedule - Web UI](resources/thermostat_schedule.png)
+
+**Note**: *Doppio click in un punto bianco della schedulazione per creare un nuovo cursore - Esistono tre scheduling Heat,DHT,Cool*
+
+**Termostato Grafico:**
+
+![Termostato Edit Schedule - Web UI](resources/thermostat_graph.png)
 
 
-##Hardware (as used/tested by author):
+**Termostato Installazione:**
 
-	- Raspberry Pi 2 Model B
-	- WiFi Adapter 150 Mbps
+![Termostato Installazione](resources/thermostat_installed.jpg)
+
+
+
+ Si può vedere il sensore di temperatura sulla destra... è fuori dal case perchè, se fosse interno, ilRaspberry Pi genererebbe calore durante il suo funzionamento ne altererebbe la misura della temperatura.
+
+
+##Hardware (usato e testato dall'autore):
+
+	- Raspberry Pi 2 Model B o Raspberry Pi 3
+	- WiFi Adapter 150 Mbps (se con Pi 3 non necessario)
 	- SunFounder Lab Modulo 2 Relè 5V
 	- WINOMO DS18B20 Weatherproof temperature sensor
 	- Makibes 5 Inch HDMI Touchscreen Display
 	- Custom 3d abs printed thermostat enclosure
-	- EMR211 Oregon Scientific
-	- Bluetooth compatible adapter
 
-##Software Requirements (as used/tested by author):
 
-	- Latest Raspbian OS
+##Requisiti Software (usati e testati dall'autore):
+
+	- Sistema operativo Raspbian
 	- Python 2.7
 	- Kivy (Ver 1.9.2 dev) UI framework
-	- Additional required python packages:
+	- Pacchetti aggiuntivi  Python:
 	    - w1thermsensor
-	    - FakeGPIO (for testing on non-Pi platforms, customized version included)
+	    - FakeGPIO (Per testare in il sistema su computer che non siano Raspberry Pi)
 	    - CherryPy (web server)
-	    - schedule (for scheduled events)
-		- bluepy
-		- subprocess32
-	    - openweathermap.org app key 
+	    - schedule (per gli eventi schedulati)
+	    - darksky app key 
 		
 
-##Software installation:
+##Software installatione:
 
-	1. Make sure you have the latest Raspbian updates
-	2. Install Kivy on your Pi using the instructions found here: http://www.kivy.org/docs/installation/installation-rpi.html
-	3. Install additional python packages: CherryPy, schedule,bluepy,subprocess32 & w1thermsensor using the command "sudo pip install ..."
-	4. Get an openweathermap.org app key if you don't have one from here: http://www.openweathermap.org/appid
-	5. Edit the thermostat_settings.json file and insert your Open Weather Map app key in the appropriate spot. Also change the location to your location.
+	1. Assicurati di avere l'ultima versione di Raspbian aggiornata
+	2. Installa pip 
+	3. Installa Kivy sul tuo Pi usando le istruzioni che trovi qui: http://www.kivy.org/docs/installation/installation-rpi.html
+	4. Installa i pacchetti aggiuntivi Python: CherryPy, schedule & w1thermsensor usando il comando "sudo pip install ..."
+	5. Prendi la App Key di darksky , se non ce l'hai puoi averne una da qui: https://darksky.net/dev/
+	5. Modifica il file thermostat_settings.json e inserisci la App Key di Darksky nell'opzione apposita. Inoltre puoi cambiare la locazione con la tua .
 
 
+##Configurazione Hardware:
 
-##Hardware Configuration:
+Il software è configurato per usare i seguenti pin GPIO di dafault:
 
-The software comes configured to use the following default GPIO pins:
-
-	GPIO 4  - Temperature sensor
-	GPIO 27 - Heat (Furnace) relay control
-	GPIO 18 - Fan relay control
-	GPIO 5  - PIR Motion Sensor (optional)
+	GPIO 4  - Sensore di Temperatura
+	GPIO 27 - Relè di controllo per l'impianto di riscaldamento
+	GPIO 18 - Relè di controllo Condizionatore
+	GPIO 5  - PIR Sensore di movimento (opzionale)
  
-If you wish to use different pins, then change the appropriate values in the thermostat_settings.json file. 
+Se vuoi usare pin differenti, basta cambiare gli opportuni valori nel file thermostat_settings.json. Per il sensore di temperatura va cambiato il config.txt e aggiunto/cambiato "dtoverlay=w1-gpio,gpiopin=21"
 
-The author used a Raspberry Pi 2 Model B for his thermostat. Less capable Pi hardware may not provide adequate response times for the touch and web interfaces.
+L'autore ha usato un Raspberry Pi 2 Model B per il suo termostato. Un Pi meno capace in termini di prestazioni potrebbe non rispondere adeguatamente ai comandi del touch e della interfaccia web.
 
 
 
-##How USE:
-	Heat :	Schedule change temperature as set on file
-		change temp on slider remain on the temperature till a schedule change it
+##COME SI USA:
+	Estate/Inverno :La temperatura di set point cambia a seconda di come è impostata nella programmazione.
+		cambiare la temperatura tramite i pulsanti setta la temperatura e  fa si che venga mantenuto il set impostato manualmente fino al successivo cambio di programmazione
 		
-	Hold :	Temp remains on set temp
+	Manuale :Il set point della temperatura impostato dallo slider rimane mantenuto indifferentemente dalla programmazione
 	
-	No Hold No Heat : set temp to Ice Preserve (set Temperature on Json Setting file)
+	Nessun Tasto Premuto : il set temp viene impostato a No Ice (no ghiaccio) (livello di temperatura impostabile nel file Setting.json)
 
-##Temperature Sensor Calibration:
+##Calibrazione Sensore di Temperatura:
 
-The implementation supports calibration of your DS18B20 temperature sensor, following the method outlined here: https://learn.adafruit.com/calibrating-sensors/two-point-calibration
+E' supportata la calibrazione del sensore di temperatua DS18B20 seguendo il metodo qui riportato: https://learn.adafruit.com/calibrating-sensors/two-point-calibration
 
-If you want to calibrate your DS18B20 (you should be using a weatherproof sensor if you want to do calibration!), then find out your elevation (meters or feet, depending on which measurement 
-system you are using), measure the temperature in an ice bath and in boiling water, and change the elevation and measured freezing/boiling points in the thermostat_settings.json file.
+Se vuoi calibrare il tuo DS18B20 (per farla serve un sensore a tenuta ermetica), devi trovare la tua altitudine (metri o piedi, dipende dalla misura) sul livello del mare, misurare la temperatura del ghiaccio e dell'acqua bollente e cambiare l'elevazione e le temperature appena dette nel file thermostat_settings.json.
 
-The default values in the thermostat_settings.json file(s) effectively do no correction, so you can leave them alone if you don't want to calibrate your temperature sensor.
+I valori forniti di default nel file dei settaggi effettivamente non richiedono correzione, perciò puoi lasciarli così come sono se non puoi effettuare la calibrazione.
 
  
-##Running the Thermostat Code: 
+##Eseguire il codice del termostato: 
 
-You can run the code as follows:
+Puoi eseguire il codice in questi modi:
 
 	sudo python thermostat.py
 
-You need sudo since the code accesses the Pi GPIO pins, which requires root priviledges
+Ti serve il sudo perchè servono i privilegi di amministratore per operare con i pin GPIO.
 
-To have the thermostat code start automatically at boot time, copy the resources/thermostat.desktop file into /home/pi/.config/autostart/. This assumes that you have put
-the thermostat code in /home/pi/thermostat. If you have the code elsewhere then edit thermostat.desktop and thermostat.sh to point to where you have the code.
+Per avere il codice che parta automaticamente ad ogni avvio,usare sudo crontab -e aggiungere
+@reboot /home/pi/thermostat/"nome del file salvato prima"
 
-To access the Web-based interface to control the thermostat and change the schedule, just point your favourite browser at the IP address that your Pi board is set to. For example, the author's thermostat is on 10.66.66.30, so entering http://10.66.66.30 will bring up the web interface. The Web Interface is touch sensitive on IOS devices. If you bring up the Web Interface on Safari on an IOS device (iPhone/iPad), you can save it to your home page, and it will use a nice thermostat icon.
+Nel caso a @reboot sia gia presente altro da avviare basta aggiungere:
 
-
-##Security/Authentication:
-On thermostat_setting.json
-change user and pass as you like
-default:
-user : termo
-pass : pass
-
-## Turn Off screen
-I have modified my 5 screen to switch on and off screen 
-with a ssr and so i switch off the screen via software with delay set on lightOff in thermostat_setting.json
+    && /home/pi/thermostat/"nome del file salvato prima"
 
 
-##Minimal UI (screensaver) mode: 
+Ricordatevi di rendere il file eseguibile
 
-The Minimal UI (screensaver) mode is enabled by default. This mode will just show the current temperature, greyed out after a specified timeout. To restore the full UI, just touch the screen anywhere. You can disable this in the in the thermostat_settings.json file. Default timeout to display the minimal UI is 1 minute, and can be changed in the in the settings file as well.
+chmod +x "nomefile di autorun"
 
-You can optionally attach a PIR motion sensor and use that to switch back to full UI mode when motion is detected. Use of a PIR sensor is disabled by default. You can enable the PIR sensor in the thermostat_settings.json file.
-If you are using the PIR Motion Sensor, you can also specify a From/To time range (HH:MM for each) during which you wish to ignore any sensed motion, in effect, making you touch the screen to show the full UI during the specified time period. Default settings are not to ignore the PIR Motion Sensor ever (eg. From/To both set to "00:00").  This was a feature request from the boss (wife!), so that the display would not switch to the full UI in the wee hours when she gets up to go to the bathroom. 
+Per accedere all'interfaccia web per controllare il termostato e cambiare la programmazione, semplicemente punta il tuo browser preferito all'IP del raspberry. Per esempio, il raspberry dell'autore ha un IP di 192.168.1.110, quindi basterà entrare in http://192.168.1.110 per accedere all'interfaccia.
+
+
+##Sicurezza/autenticazione:
+Usare Remote3.it per ottenere l'accesso da internet tramite una connessione protetta. 
+
+## Spegnimento dello schermo
+Se hai uno schermo con relè per il controllo della retroilluminazione puoi decidere il tempo dopo il quale si spenga impostato il valore nel parametro lightOff nel file thermostat_settings.json
+
+
+##Modo Interfaccia minimale (screensaver) mode: 
+
+L'interfaccia minimale (screensaver) è abilitata di default. Questo modo ti permetterà di visualizzare la temperatura corrente con una luminosità dei caratteri più bassa dopo alcuni secondi di inattività. Per ripristinare l'interfaccia completa basta toccare lo schermo. Eventualmente la modalità screensaver si può disattivare nel file thermostat_settings.json. Il time-out di default è di un minuto ma si può cambiare col valore che si preferisce.
+
+Opzionalmente si può usare un sensore PIR di rilevazione di movimento da usare come switch per riattivare il display se dovesse rilevare qualcuno. Questa funzione è disattivata di defualt, ma si può abilitare nel file delle impostazioni
+
+Se vuoi usare il sensore PIR, puoi anche specifica un eventuale lasso di orario in cui ignorare il sensore. Questa opzione è utile per animali domestici quando non ci sei a casa o per evitare che nelle ore notturne si accenda se ci passi davanti.
 
 
 ##Logging:
 
-This implementation is fully instrumented with logging capabilities. Logging channel (destination) and level are set in the thermostat_settings.json file.
+E' implementato un sistema completo di log. La destinazione del log e il suo livello di dettaglio è impostabile nel file thermostat_settings.json
 
-Available logging channels include:
+Include i seguenti canali di log:
 
-	none  - no logging
-	file  - log to thermostat.log file (default)
-	print - log to sysout
+	none  - no log
+	file  - log nel file thermostat.log (default)
+	print - log in sysout
 
-Logging levels include:
+Include i seguenti livelli di log:
 
-	error - Only log error conditions
-	state - Log thermostat state changes only (eg. temperature change, system status changes, etc.) (default)
-	info  - Log detailed information/settings (this logs a lot of information!)
-	debug - Log debug information (this logs a lot of stuff!)
+	error - Log dei soli errori
+	state - Log delle variazioni di stato del termostato (es. cambio di temperatura, cambio si stato, ecc) (default)
+	info  - Log dettagliato di informazioni e settaggi (tanta roba!)
+	debug - Log di informazioni di debug (veramente tantissima roba!)
 
-Each logging level includes those above it in the list, for example: info level logging also enables state and error logging entries. 
-
-Default logging is set to log to a file with level: state.
-
+Ogni livello di log include anche tutte le informazioni del livello precedente. Per esempio il livello info include anche tutte le informazioni del livello state e del livello error.
+.
 
 
 ##Credits
-Thanks to [chaeron ] (https://github.com/chaeron) who is the developer of this forked git 
+Grazie a [chaeron ] (https://github.com/chaeron) dal quale e partito il progetto originale 
 
-Thanks to [Jeff - The Nooganeer](http://www.nooganeer.com/his/category/projects/homeautomation/raspberry-pi-thermostat/), who's blog posts got me started in the right direction for the hardware needed for this project.
- 
-And finally, thanks to [Nich Fugal/Makeatronics](http://makeatronics.blogspot.com/2013/06/24v-ac-solid-state-relay-board.html) for his great 24V AC Solid State Relay Board.
+Grazie a [Painbrain](www.raspberryitaly.com) per la traduzione in italiano 
 
+Grazie a [Gianpic69](www.raspberryitaly.com) per l'aiuto nella grafica
 
 ##Additional Notes/Comments:
- 
-1. Default temperatures are in degrees Celcius, a righteous metric scale. If you wish to configure the thermostat to use the Farenheit system, you will need to replace 
-   the .json config files with those in the resources/farenheit directory.
 
-2. Future versions may include smart capabilities supporting remote wireless temperature sensors, log analysis, security/authentication and more. But don't hold your breath...
+1. La temperatura è Celsius di default,. Si può cambiare impostandola in Farenheit
 
-3. Feel free to hack the code, so long as you credit the source. It is assumed that if you do, you have some familiarity with programming, python, web coding and the like.
+2. Future versioni potrebbe includere la possibilità di comunicare con sensori di temperatura wireless, sistemi di analisi dei log, più sicurezza nell'autenticazione web e altro. Ma è un hobby, non un lavoro quindi con calma.
 
-4. You are welcome to ask questions about the implementation and to offer suggestions to the author. 
+3. Siate liberi di modificare il codice, basta mantenere nei crediti la sorgente.Se lo fate vuol dire che avete familiarità con la programmazione di python, programmazione web e simili.
 
+4. Le domande su implementazione e caratteristiche tecniche sono ben accette, anche suggerimenti per altre implementazioni da parte dell'autore.
 
 
 Enjoy!
 
 
-....Athos
 
-
-
-
-	

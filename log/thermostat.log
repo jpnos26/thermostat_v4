@@ -1589,3 +1589,321 @@
 2017-06-19T13:46:44 state/temperatureSensor/set/temperature: 26.8
 2017-06-19T13:46:59 state/temperatureSensor/set/temperature: 20.0
 2017-06-19T13:54:59 state/temperatureSensor/set/temperature: 26.8
+2017-06-19T14:02:19 state/temperatureSensor/set/temperature: 27.0
+2017-06-19T14:04:39 state/temperatureSensor/set/temperature: 26.8
+2017-06-19T14:07:39 state/temperatureSensor/set/temperature: 26.6
+2017-06-19T14:10:59 state/temperatureSensor/set/temperature: 26.4
+2017-06-19T14:15:59 state/temperatureSensor/set/temperature: 26.6
+2017-06-19T14:26:39 state/temperatureSensor/set/temperature: 26.4
+2017-06-19T14:33:00 state/temperatureSensor/set/temperature: 26.6
+2017-06-19T14:56:02 state/temperatureSensor/set/temperature: 26.9
+2017-06-20T07:05:20 state/node/presentation/sketchName: Thermostat Starting Up...
+2017-06-20T07:05:20 state/node/presentation/sketchVersion: 4.0.1
+2017-06-20T07:05:20 state/heatControl/presentation/heatControl: 
+2017-06-20T07:05:20 state/coolControl/presentation/coolControl: 
+2017-06-20T07:05:20 state/holdControl/presentation/holdControl: 
+2017-06-20T07:05:20 state/weatherCurrent/presentation/weatherCurrent: 
+2017-06-20T07:05:20 state/weatherForecastToday/presentation/weatherForecastToday: 
+2017-06-20T07:05:20 state/weatherForecastTomorrow/presentation/weatherForecastTomorrow: 
+2017-06-20T07:05:20 state/heat/presentation/heat: 
+2017-06-20T07:05:20 state/cool/presentation/cool: 
+2017-06-20T07:05:20 state/motionSensor/presentation/motionSensor: 
+2017-06-20T07:05:20 state/temperatureSensor/presentation/temperatureSensor: 
+2017-06-20T07:05:20 state/screen/presentation/screen: 
+2017-06-20T07:05:20 state/scheduler/presentation/scheduler: 
+2017-06-20T07:05:20 state/webserver/presentation/webserver: 
+2017-06-20T07:05:20 state/DhtIn/presentation/DhtIn: 
+2017-06-20T07:05:20 state/DhtOut/presentation/DhtOut: 
+2017-06-20T07:05:20 state/DhtIr/presentation/DhtIr: 
+2017-06-20T07:05:20 state/DhtZone/presentation/DhtZone: 
+2017-06-20T07:05:20 state/DhtRele/presentation/DhtRele: 
+2017-06-20T07:05:21 state/         inverno  Control/set/binaryStatus: 0
+2017-06-20T07:05:21 state/       estate  Control/set/binaryStatus: 1
+2017-06-20T07:05:21 state/           manuale  Control/set/binaryStatus: 0
+2017-06-20T07:05:22 state/webserver/set/text: Starting on 0.0.0.0:80
+2017-06-20T07:05:25 state/temperatureSensor/set/temperature: 20.0
+2017-06-20T07:05:25 state/heat/set/binaryStatus: 0
+2017-06-20T07:07:26 state/temperatureSensor/set/temperature: 28.0
+2017-06-20T07:08:26 state/temperatureSensor/set/temperature: 28.7
+2017-06-20T07:09:26 state/temperatureSensor/set/temperature: 29.1
+2017-06-20T07:09:39 state/node/presentation/sketchName: Thermostat Starting Up...
+2017-06-20T07:09:39 state/node/presentation/sketchVersion: 4.0.1
+2017-06-20T07:09:39 state/heatControl/presentation/heatControl: 
+2017-06-20T07:09:39 state/coolControl/presentation/coolControl: 
+2017-06-20T07:09:39 state/holdControl/presentation/holdControl: 
+2017-06-20T07:09:39 state/weatherCurrent/presentation/weatherCurrent: 
+2017-06-20T07:09:39 state/weatherForecastToday/presentation/weatherForecastToday: 
+2017-06-20T07:09:39 state/weatherForecastTomorrow/presentation/weatherForecastTomorrow: 
+2017-06-20T07:09:39 state/heat/presentation/heat: 
+2017-06-20T07:09:39 state/cool/presentation/cool: 
+2017-06-20T07:09:39 state/motionSensor/presentation/motionSensor: 
+2017-06-20T07:09:39 state/temperatureSensor/presentation/temperatureSensor: 
+2017-06-20T07:09:39 state/screen/presentation/screen: 
+2017-06-20T07:09:39 state/scheduler/presentation/scheduler: 
+2017-06-20T07:09:39 state/webserver/presentation/webserver: 
+2017-06-20T07:09:39 state/DhtIn/presentation/DhtIn: 
+2017-06-20T07:09:39 state/DhtOut/presentation/DhtOut: 
+2017-06-20T07:09:39 state/DhtIr/presentation/DhtIr: 
+2017-06-20T07:09:39 state/DhtZone/presentation/DhtZone: 
+2017-06-20T07:09:39 state/DhtRele/presentation/DhtRele: 
+2017-06-20T07:09:40 state/         inverno  Control/set/binaryStatus: 0
+2017-06-20T07:09:40 state/       estate  Control/set/binaryStatus: 1
+2017-06-20T07:09:40 state/           manuale  Control/set/binaryStatus: 0
+2017-06-20T07:09:40 state/webserver/set/text: Starting on 0.0.0.0:80
+2017-06-20T07:09:45 state/temperatureSensor/set/temperature: 20.0
+2017-06-20T07:09:46 state/heat/set/binaryStatus: 0
+2017-06-20T07:11:25 state/temperatureSensor/set/temperature: 29.5
+2017-06-20T07:12:25 state/temperatureSensor/set/temperature: 30.0
+2017-06-20T07:12:37 state/node/presentation/sketchName: Thermostat Starting Up...
+2017-06-20T07:12:37 state/node/presentation/sketchVersion: 4.0.1
+2017-06-20T07:12:37 state/heatControl/presentation/heatControl: 
+2017-06-20T07:12:37 state/coolControl/presentation/coolControl: 
+2017-06-20T07:12:37 state/holdControl/presentation/holdControl: 
+2017-06-20T07:12:37 state/weatherCurrent/presentation/weatherCurrent: 
+2017-06-20T07:12:37 state/weatherForecastToday/presentation/weatherForecastToday: 
+2017-06-20T07:12:37 state/weatherForecastTomorrow/presentation/weatherForecastTomorrow: 
+2017-06-20T07:12:37 state/heat/presentation/heat: 
+2017-06-20T07:12:37 state/cool/presentation/cool: 
+2017-06-20T07:12:37 state/motionSensor/presentation/motionSensor: 
+2017-06-20T07:12:37 state/temperatureSensor/presentation/temperatureSensor: 
+2017-06-20T07:12:37 state/screen/presentation/screen: 
+2017-06-20T07:12:37 state/scheduler/presentation/scheduler: 
+2017-06-20T07:12:37 state/webserver/presentation/webserver: 
+2017-06-20T07:12:37 state/DhtIn/presentation/DhtIn: 
+2017-06-20T07:12:37 state/DhtOut/presentation/DhtOut: 
+2017-06-20T07:12:37 state/DhtIr/presentation/DhtIr: 
+2017-06-20T07:12:37 state/DhtZone/presentation/DhtZone: 
+2017-06-20T07:12:37 state/DhtRele/presentation/DhtRele: 
+2017-06-20T07:12:38 state/         inverno  Control/set/binaryStatus: 0
+2017-06-20T07:12:38 state/       estate  Control/set/binaryStatus: 1
+2017-06-20T07:12:38 state/           manuale  Control/set/binaryStatus: 0
+2017-06-20T07:12:38 state/webserver/set/text: Starting on 0.0.0.0:80
+2017-06-20T07:12:42 state/node/set/custom/shutdown: Thermostat Shutting Down...
+2017-06-20T07:13:29 state/node/presentation/sketchName: Thermostat Starting Up...
+2017-06-20T07:13:29 state/node/presentation/sketchVersion: 4.0.1
+2017-06-20T07:13:29 state/heatControl/presentation/heatControl: 
+2017-06-20T07:13:29 state/coolControl/presentation/coolControl: 
+2017-06-20T07:13:29 state/holdControl/presentation/holdControl: 
+2017-06-20T07:13:29 state/weatherCurrent/presentation/weatherCurrent: 
+2017-06-20T07:13:29 state/weatherForecastToday/presentation/weatherForecastToday: 
+2017-06-20T07:13:29 state/weatherForecastTomorrow/presentation/weatherForecastTomorrow: 
+2017-06-20T07:13:29 state/heat/presentation/heat: 
+2017-06-20T07:13:29 state/cool/presentation/cool: 
+2017-06-20T07:13:29 state/motionSensor/presentation/motionSensor: 
+2017-06-20T07:13:29 state/temperatureSensor/presentation/temperatureSensor: 
+2017-06-20T07:13:29 state/screen/presentation/screen: 
+2017-06-20T07:13:29 state/scheduler/presentation/scheduler: 
+2017-06-20T07:13:29 state/webserver/presentation/webserver: 
+2017-06-20T07:13:29 state/DhtIn/presentation/DhtIn: 
+2017-06-20T07:13:29 state/DhtOut/presentation/DhtOut: 
+2017-06-20T07:13:29 state/DhtIr/presentation/DhtIr: 
+2017-06-20T07:13:29 state/DhtZone/presentation/DhtZone: 
+2017-06-20T07:13:29 state/DhtRele/presentation/DhtRele: 
+2017-06-20T07:13:30 state/         inverno  Control/set/binaryStatus: 0
+2017-06-20T07:13:30 state/       estate  Control/set/binaryStatus: 1
+2017-06-20T07:13:30 state/           manuale  Control/set/binaryStatus: 0
+2017-06-20T07:13:30 state/webserver/set/text: Starting on 0.0.0.0:80
+2017-06-20T07:13:33 state/node/set/custom/shutdown: Thermostat Shutting Down...
+2017-06-20T07:14:02 state/node/presentation/sketchName: Thermostat Starting Up...
+2017-06-20T07:14:02 state/node/presentation/sketchVersion: 4.0.1
+2017-06-20T07:14:02 state/heatControl/presentation/heatControl: 
+2017-06-20T07:14:02 state/coolControl/presentation/coolControl: 
+2017-06-20T07:14:02 state/holdControl/presentation/holdControl: 
+2017-06-20T07:14:02 state/weatherCurrent/presentation/weatherCurrent: 
+2017-06-20T07:14:02 state/weatherForecastToday/presentation/weatherForecastToday: 
+2017-06-20T07:14:02 state/weatherForecastTomorrow/presentation/weatherForecastTomorrow: 
+2017-06-20T07:14:02 state/heat/presentation/heat: 
+2017-06-20T07:14:02 state/cool/presentation/cool: 
+2017-06-20T07:14:02 state/motionSensor/presentation/motionSensor: 
+2017-06-20T07:14:02 state/temperatureSensor/presentation/temperatureSensor: 
+2017-06-20T07:14:02 state/screen/presentation/screen: 
+2017-06-20T07:14:02 state/scheduler/presentation/scheduler: 
+2017-06-20T07:14:02 state/webserver/presentation/webserver: 
+2017-06-20T07:14:02 state/DhtIn/presentation/DhtIn: 
+2017-06-20T07:14:02 state/DhtOut/presentation/DhtOut: 
+2017-06-20T07:14:02 state/DhtIr/presentation/DhtIr: 
+2017-06-20T07:14:02 state/DhtZone/presentation/DhtZone: 
+2017-06-20T07:14:02 state/DhtRele/presentation/DhtRele: 
+2017-06-20T07:14:03 state/         inverno  Control/set/binaryStatus: 0
+2017-06-20T07:14:03 state/       estate  Control/set/binaryStatus: 1
+2017-06-20T07:14:03 state/           manuale  Control/set/binaryStatus: 0
+2017-06-20T07:14:03 state/webserver/set/text: Starting on 0.0.0.0:80
+2017-06-20T07:14:07 state/temperatureSensor/set/temperature: 20.0
+2017-06-20T07:14:07 state/heat/set/binaryStatus: 0
+2017-06-20T07:14:58 state/node/presentation/sketchName: Thermostat Starting Up...
+2017-06-20T07:14:58 state/node/presentation/sketchVersion: 4.0.1
+2017-06-20T07:14:58 state/heatControl/presentation/heatControl: 
+2017-06-20T07:14:58 state/coolControl/presentation/coolControl: 
+2017-06-20T07:14:58 state/holdControl/presentation/holdControl: 
+2017-06-20T07:14:58 state/weatherCurrent/presentation/weatherCurrent: 
+2017-06-20T07:14:58 state/weatherForecastToday/presentation/weatherForecastToday: 
+2017-06-20T07:14:58 state/weatherForecastTomorrow/presentation/weatherForecastTomorrow: 
+2017-06-20T07:14:58 state/heat/presentation/heat: 
+2017-06-20T07:14:58 state/cool/presentation/cool: 
+2017-06-20T07:14:58 state/motionSensor/presentation/motionSensor: 
+2017-06-20T07:14:58 state/temperatureSensor/presentation/temperatureSensor: 
+2017-06-20T07:14:58 state/screen/presentation/screen: 
+2017-06-20T07:14:58 state/scheduler/presentation/scheduler: 
+2017-06-20T07:14:58 state/webserver/presentation/webserver: 
+2017-06-20T07:14:58 state/DhtIn/presentation/DhtIn: 
+2017-06-20T07:14:58 state/DhtOut/presentation/DhtOut: 
+2017-06-20T07:14:58 state/DhtIr/presentation/DhtIr: 
+2017-06-20T07:14:58 state/DhtZone/presentation/DhtZone: 
+2017-06-20T07:14:58 state/DhtRele/presentation/DhtRele: 
+2017-06-20T07:14:59 state/         inverno  Control/set/binaryStatus: 0
+2017-06-20T07:14:59 state/       estate  Control/set/binaryStatus: 1
+2017-06-20T07:14:59 state/           manuale  Control/set/binaryStatus: 0
+2017-06-20T07:14:59 state/webserver/set/text: Starting on 0.0.0.0:80
+2017-06-20T07:15:02 state/temperatureSensor/set/temperature: 20.0
+2017-06-20T07:15:03 state/heat/set/binaryStatus: 0
+2017-06-20T07:15:13 state/node/set/custom/shutdown: Thermostat Shutting Down...
+2017-06-20T07:15:18 state/node/presentation/sketchName: Thermostat Starting Up...
+2017-06-20T07:15:18 state/node/presentation/sketchVersion: 4.0.1
+2017-06-20T07:15:18 state/heatControl/presentation/heatControl: 
+2017-06-20T07:15:18 state/coolControl/presentation/coolControl: 
+2017-06-20T07:15:18 state/holdControl/presentation/holdControl: 
+2017-06-20T07:15:18 state/weatherCurrent/presentation/weatherCurrent: 
+2017-06-20T07:15:18 state/weatherForecastToday/presentation/weatherForecastToday: 
+2017-06-20T07:15:18 state/weatherForecastTomorrow/presentation/weatherForecastTomorrow: 
+2017-06-20T07:15:18 state/heat/presentation/heat: 
+2017-06-20T07:15:18 state/cool/presentation/cool: 
+2017-06-20T07:15:18 state/motionSensor/presentation/motionSensor: 
+2017-06-20T07:15:18 state/temperatureSensor/presentation/temperatureSensor: 
+2017-06-20T07:15:18 state/screen/presentation/screen: 
+2017-06-20T07:15:18 state/scheduler/presentation/scheduler: 
+2017-06-20T07:15:18 state/webserver/presentation/webserver: 
+2017-06-20T07:15:18 state/DhtIn/presentation/DhtIn: 
+2017-06-20T07:15:18 state/DhtOut/presentation/DhtOut: 
+2017-06-20T07:15:18 state/DhtIr/presentation/DhtIr: 
+2017-06-20T07:15:18 state/DhtZone/presentation/DhtZone: 
+2017-06-20T07:15:18 state/DhtRele/presentation/DhtRele: 
+2017-06-20T07:15:19 state/         inverno  Control/set/binaryStatus: 0
+2017-06-20T07:15:19 state/       estate  Control/set/binaryStatus: 1
+2017-06-20T07:15:19 state/           manuale  Control/set/binaryStatus: 0
+2017-06-20T07:15:19 state/webserver/set/text: Starting on 0.0.0.0:80
+2017-06-20T07:15:23 state/temperatureSensor/set/temperature: 20.0
+2017-06-20T07:15:23 state/heat/set/binaryStatus: 0
+2017-06-20T07:15:53 state/node/presentation/sketchName: Thermostat Starting Up...
+2017-06-20T07:15:53 state/node/presentation/sketchVersion: 4.0.1
+2017-06-20T07:15:53 state/heatControl/presentation/heatControl: 
+2017-06-20T07:15:53 state/coolControl/presentation/coolControl: 
+2017-06-20T07:15:53 state/holdControl/presentation/holdControl: 
+2017-06-20T07:15:53 state/weatherCurrent/presentation/weatherCurrent: 
+2017-06-20T07:15:53 state/weatherForecastToday/presentation/weatherForecastToday: 
+2017-06-20T07:15:53 state/weatherForecastTomorrow/presentation/weatherForecastTomorrow: 
+2017-06-20T07:15:53 state/heat/presentation/heat: 
+2017-06-20T07:15:53 state/cool/presentation/cool: 
+2017-06-20T07:15:53 state/motionSensor/presentation/motionSensor: 
+2017-06-20T07:15:53 state/temperatureSensor/presentation/temperatureSensor: 
+2017-06-20T07:15:53 state/screen/presentation/screen: 
+2017-06-20T07:15:53 state/scheduler/presentation/scheduler: 
+2017-06-20T07:15:53 state/webserver/presentation/webserver: 
+2017-06-20T07:15:53 state/DhtIn/presentation/DhtIn: 
+2017-06-20T07:15:53 state/DhtOut/presentation/DhtOut: 
+2017-06-20T07:15:53 state/DhtIr/presentation/DhtIr: 
+2017-06-20T07:15:53 state/DhtZone/presentation/DhtZone: 
+2017-06-20T07:15:53 state/DhtRele/presentation/DhtRele: 
+2017-06-20T07:15:54 state/         inverno  Control/set/binaryStatus: 0
+2017-06-20T07:15:54 state/       estate  Control/set/binaryStatus: 1
+2017-06-20T07:15:54 state/           manuale  Control/set/binaryStatus: 0
+2017-06-20T07:15:54 state/webserver/set/text: Starting on 0.0.0.0:80
+2017-06-20T07:15:58 state/temperatureSensor/set/temperature: 20.0
+2017-06-20T07:15:58 state/heat/set/binaryStatus: 0
+2017-06-20T07:16:38 state/temperatureSensor/set/temperature: 30.5
+2017-06-20T07:20:58 state/temperatureSensor/set/temperature: 30.7
+2017-06-20T07:26:18 state/temperatureSensor/set/temperature: 30.9
+2017-06-20T07:27:38 state/node/presentation/sketchName: Thermostat Starting Up...
+2017-06-20T07:27:38 state/node/presentation/sketchVersion: 4.0.1
+2017-06-20T07:27:38 state/heatControl/presentation/heatControl: 
+2017-06-20T07:27:38 state/coolControl/presentation/coolControl: 
+2017-06-20T07:27:38 state/holdControl/presentation/holdControl: 
+2017-06-20T07:27:38 state/weatherCurrent/presentation/weatherCurrent: 
+2017-06-20T07:27:38 state/weatherForecastToday/presentation/weatherForecastToday: 
+2017-06-20T07:27:38 state/weatherForecastTomorrow/presentation/weatherForecastTomorrow: 
+2017-06-20T07:27:38 state/heat/presentation/heat: 
+2017-06-20T07:27:38 state/cool/presentation/cool: 
+2017-06-20T07:27:38 state/motionSensor/presentation/motionSensor: 
+2017-06-20T07:27:38 state/temperatureSensor/presentation/temperatureSensor: 
+2017-06-20T07:27:38 state/screen/presentation/screen: 
+2017-06-20T07:27:38 state/scheduler/presentation/scheduler: 
+2017-06-20T07:27:38 state/webserver/presentation/webserver: 
+2017-06-20T07:27:38 state/DhtIn/presentation/DhtIn: 
+2017-06-20T07:27:38 state/DhtOut/presentation/DhtOut: 
+2017-06-20T07:27:38 state/DhtIr/presentation/DhtIr: 
+2017-06-20T07:27:38 state/DhtZone/presentation/DhtZone: 
+2017-06-20T07:27:38 state/DhtRele/presentation/DhtRele: 
+2017-06-20T07:27:39 state/         inverno  Control/set/binaryStatus: 0
+2017-06-20T07:27:39 state/       estate  Control/set/binaryStatus: 1
+2017-06-20T07:27:39 state/           manuale  Control/set/binaryStatus: 0
+2017-06-20T07:27:39 state/webserver/set/text: Starting on 0.0.0.0:80
+2017-06-20T07:27:43 state/temperatureSensor/set/temperature: 20.0
+2017-06-20T07:27:44 state/heat/set/binaryStatus: 0
+2017-06-20T07:27:53 state/node/set/custom/shutdown: Thermostat Shutting Down...
+2017-06-20T07:27:57 state/node/presentation/sketchName: Thermostat Starting Up...
+2017-06-20T07:27:57 state/node/presentation/sketchVersion: 4.0.1
+2017-06-20T07:27:57 state/heatControl/presentation/heatControl: 
+2017-06-20T07:27:57 state/coolControl/presentation/coolControl: 
+2017-06-20T07:27:57 state/holdControl/presentation/holdControl: 
+2017-06-20T07:27:57 state/weatherCurrent/presentation/weatherCurrent: 
+2017-06-20T07:27:57 state/weatherForecastToday/presentation/weatherForecastToday: 
+2017-06-20T07:27:57 state/weatherForecastTomorrow/presentation/weatherForecastTomorrow: 
+2017-06-20T07:27:57 state/heat/presentation/heat: 
+2017-06-20T07:27:57 state/cool/presentation/cool: 
+2017-06-20T07:27:57 state/motionSensor/presentation/motionSensor: 
+2017-06-20T07:27:57 state/temperatureSensor/presentation/temperatureSensor: 
+2017-06-20T07:27:57 state/screen/presentation/screen: 
+2017-06-20T07:27:57 state/scheduler/presentation/scheduler: 
+2017-06-20T07:27:57 state/webserver/presentation/webserver: 
+2017-06-20T07:27:57 state/DhtIn/presentation/DhtIn: 
+2017-06-20T07:27:57 state/DhtOut/presentation/DhtOut: 
+2017-06-20T07:27:57 state/DhtIr/presentation/DhtIr: 
+2017-06-20T07:27:57 state/DhtZone/presentation/DhtZone: 
+2017-06-20T07:27:57 state/DhtRele/presentation/DhtRele: 
+2017-06-20T07:27:58 state/         inverno  Control/set/binaryStatus: 0
+2017-06-20T07:27:58 state/       estate  Control/set/binaryStatus: 1
+2017-06-20T07:27:58 state/           manuale  Control/set/binaryStatus: 0
+2017-06-20T07:27:58 state/webserver/set/text: Starting on 0.0.0.0:80
+2017-06-20T07:28:02 state/temperatureSensor/set/temperature: 20.0
+2017-06-20T07:28:03 state/heat/set/binaryStatus: 0
+2017-06-20T07:35:42 state/temperatureSensor/set/temperature: 31.2
+2017-06-20T07:39:04 state/node/presentation/sketchName: Thermostat Starting Up...
+2017-06-20T07:39:04 state/node/presentation/sketchVersion: 4.0.1
+2017-06-20T07:39:04 state/heatControl/presentation/heatControl: 
+2017-06-20T07:39:04 state/coolControl/presentation/coolControl: 
+2017-06-20T07:39:04 state/holdControl/presentation/holdControl: 
+2017-06-20T07:39:04 state/weatherCurrent/presentation/weatherCurrent: 
+2017-06-20T07:39:04 state/weatherForecastToday/presentation/weatherForecastToday: 
+2017-06-20T07:39:04 state/weatherForecastTomorrow/presentation/weatherForecastTomorrow: 
+2017-06-20T07:39:04 state/heat/presentation/heat: 
+2017-06-20T07:39:04 state/cool/presentation/cool: 
+2017-06-20T07:39:04 state/motionSensor/presentation/motionSensor: 
+2017-06-20T07:39:04 state/temperatureSensor/presentation/temperatureSensor: 
+2017-06-20T07:39:04 state/screen/presentation/screen: 
+2017-06-20T07:39:04 state/scheduler/presentation/scheduler: 
+2017-06-20T07:39:04 state/webserver/presentation/webserver: 
+2017-06-20T07:39:04 state/DhtIn/presentation/DhtIn: 
+2017-06-20T07:39:04 state/DhtOut/presentation/DhtOut: 
+2017-06-20T07:39:04 state/DhtIr/presentation/DhtIr: 
+2017-06-20T07:39:04 state/DhtZone/presentation/DhtZone: 
+2017-06-20T07:39:04 state/DhtRele/presentation/DhtRele: 
+2017-06-20T07:39:05 state/         inverno  Control/set/binaryStatus: 0
+2017-06-20T07:39:05 state/       estate  Control/set/binaryStatus: 1
+2017-06-20T07:39:05 state/           manuale  Control/set/binaryStatus: 0
+2017-06-20T07:39:05 state/webserver/set/text: Starting on 0.0.0.0:80
+2017-06-20T07:39:09 state/temperatureSensor/set/temperature: 20.0
+2017-06-20T07:39:09 state/heat/set/binaryStatus: 0
+2017-06-20T07:47:10 state/temperatureSensor/set/temperature: 31.4
+2017-06-20T07:56:50 state/temperatureSensor/set/temperature: 31.6
+2017-06-20T08:01:50 state/temperatureSensor/set/temperature: 31.4
+2017-06-20T08:02:12 state/temperatureSensor/set/temperature: 31.6
+2017-06-20T08:02:27 state/temperatureSensor/set/temperature: 20.0
+2017-06-20T08:13:28 state/temperatureSensor/set/temperature: 31.6
+2017-06-20T08:18:50 state/temperatureSensor/set/temperature: 31.8
+2017-06-20T08:24:10 state/temperatureSensor/set/temperature: 32.0
+2017-06-20T08:25:10 state/temperatureSensor/set/temperature: 31.8
+2017-06-20T08:26:10 state/temperatureSensor/set/temperature: 31.5
+2017-06-20T08:29:10 state/temperatureSensor/set/temperature: 31.3
+2017-06-20T08:30:10 state/temperatureSensor/set/temperature: 30.8
+2017-06-20T08:32:30 state/temperatureSensor/set/temperature: 30.6
+2017-06-20T08:34:30 state/temperatureSensor/set/temperature: 30.4
+2017-06-20T08:37:50 state/temperatureSensor/set/temperature: 30.2
