@@ -48,7 +48,7 @@
 	"openDoor":300
     },
     "weather": {
-        "appkey": "key for darksky",
+        "appkey": "112bea22ef3081eed10d82faffcc46c2",
         "forecastRefreshInterval": 60,
         "location": "44.110921, 9.963725",
         "weatherExceptionInterval": 5,

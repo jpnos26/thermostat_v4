@@ -111,8 +111,9 @@ L'autore ha usato un Raspberry Pi 2 Model B per il suo termostato. Un Pi meno ca
 
 
 ##COME SI USA:
+
 	Estate/Inverno :La temperatura di set point cambia a seconda di come è impostata nella programmazione.
-		cambiare la temperatura tramite i pulsanti setta la temperatura e  fa si che venga mantenuto il set impostato manualmente fino al successivo cambio di programmazione
+			cambiare la temperatura tramite i pulsanti setta la temperatura e  fa si che venga mantenuto il set impostato 				manualmente fino al successivo cambio di programmazione
 		
 	Manuale :Il set point della temperatura impostato dallo slider rimane mantenuto indifferentemente dalla programmazione
 	
