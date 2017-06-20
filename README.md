@@ -136,8 +136,13 @@ Puoi eseguire il codice in questi modi:
 
 Ti serve il sudo perchè servono i privilegi di amministratore per operare con i pin GPIO.
 
-Per avere il codice che parta automaticamente ad ogni avvio,usare sudo crontab -e aggiungere
-@reboot /home/pi/thermostat/"nome del file salvato prima"
+Per avere il codice che parta automaticamente ad ogni avvio,usare 
+
+	sudo crontab -e  	
+
+aggiungere
+
+	@reboot /home/pi/thermostat/"nome del file shell"
 
 Nel caso a @reboot sia gia presente altro da avviare basta aggiungere:
 
@@ -146,15 +151,17 @@ Nel caso a @reboot sia gia presente altro da avviare basta aggiungere:
 
 Ricordatevi di rendere il file eseguibile
 
-chmod +x "nomefile di autorun"
+	chmod +x "nomefile di autorun"
 
 Per accedere all'interfaccia web per controllare il termostato e cambiare la programmazione, semplicemente punta il tuo browser preferito all'IP del raspberry. Per esempio, il raspberry dell'autore ha un IP di 192.168.1.110, quindi basterà entrare in http://192.168.1.110 per accedere all'interfaccia.
 
 
 ##Sicurezza/autenticazione:
+
 Usare Remote3.it per ottenere l'accesso da internet tramite una connessione protetta. 
 
 ## Spegnimento dello schermo
+
 Se hai uno schermo con relè per il controllo della retroilluminazione puoi decidere il tempo dopo il quale si spenga impostato il valore nel parametro lightOff nel file thermostat_settings.json
 
 
