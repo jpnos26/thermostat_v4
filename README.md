@@ -196,6 +196,7 @@ Ogni livello di log include anche tutte le informazioni del livello precedente. 
 
 
 ##Credits
+
 Grazie a [chaeron ] (https://github.com/chaeron) dal quale e partito il progetto originale 
 
 Grazie a [Painbrain](www.raspberryitaly.com) per la traduzione in italiano 
