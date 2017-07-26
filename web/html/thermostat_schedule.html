@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta id="viewport" name="viewport" content="width=500, initial-scale=0.75, minimum-scale=0.75, maximum-scale=0.75, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>Thermostat Web Interface - Schedule</title>
+  <title>Thermostat Programmazione</title>
   <link href="/images/Apple_ThermostatIcon_120x120.png" rel="apple-touch-icon" sizes="120x120" />
   <link href="/images/Apple_ThermostatIcon_152x152.png" rel="apple-touch-icon" sizes="152x152" />
   <link href="/images/Apple_ThermostatIcon_180x180.png" rel="apple-touch-icon" sizes="180x180" />
@@ -30,7 +30,9 @@
 	}
 
 	var schedules = [ "heat", "dht" ,"cool"];
-	var days = [ "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" ];
+	var schedulesName = ["Inverno","dht","Estate"];
+	var days = [ "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday" ];
+	var oggi = [ "Lunedi", "Martedi", "Mercoledi", "Giovedi", "Venerdi", "Sabato", "Domenica" ];
 	var scheduleSliders = [];
 
 	$.ajaxSetup( { cache: false } );
@@ -38,10 +40,11 @@
 	$.getJSON( "schedule.json", function( data ) {
 	  for( s = 0; s < schedules.length; s++ ) {
 		  schedule = schedules[ s ];
+		  scheduleText = schedulesName[ s ];
 		  //console.log ( schedule,schedules[s]);
 		  $('#schedule-select').append( $('<option>', {
 			value: schedule,
-			text: schedule
+			text: scheduleText
 		  }));
 
 		  for( i = 0; i < days.length; i++ ) {
@@ -49,13 +52,13 @@
 			
 			var canvas = $('<canvas>').attr({
 							id: schedule + "-" + day,
-							width: 500,
-							height: 78
+							width: 600,
+							height: 120
 						 }).appendTo( "#" + schedule )[ 0 ];
 
 			$('<br>').appendTo( "#" + schedule );
 
-			var ss = new ScheduleSlider( schedule, days[ i ], canvas, "pointer", "pointer-selected", scheduleSliders );
+			var ss = new ScheduleSlider( schedule, days[ i ], canvas, "pointer", "pointer-selected", scheduleSliders, oggi[i] );
 			
 			scheduleSliders.push( ss );
 		
@@ -74,9 +77,7 @@
 		  schedule = schedules[ s ];
 		  $( "#" + schedule ).hide();
        }
-
-	   $( "#" + $('#schedule-select').find( ":selected" ).text() ).show();
-
+	   $( "#" + $('#schedule-select').find( ":selected" ).val() ).show();
 	   scheduleSliders[ 1 ].setSelected( null );  // Remove all selections when schedule changes
 	});
 
@@ -155,7 +156,7 @@
 	}
 
 	canvas {
-		border: 1px solid #DDDDDD;
+		border: 1px solid #CCBBDD;
 	}
 
 	#dht {
@@ -172,12 +173,12 @@
 	}
   </style>
 </head>
-<body>
+<body bgcolor = "#d0d0f0">
 	<div align="center">
 		<img id="pointer" class="pointer" src="/images/downArrow_white.png">
 		<img id="pointer-selected" class="pointer" src="/images/downArrow_red.png">
 
-		<table width="500px">
+		<table width="600px">
 			<tr>
 			<td width="20%" align="center"><img src="/images/logo.png" width="40px" height="40px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 			<td width="60%"align="center"><b>Thermostat @@version@@ Schedule</b><br>@@dt@@</td>
@@ -189,9 +190,9 @@
 	   	<div id="dht"></div>
 		<div id="cool"></div>
 
-	   	<div id="entryDetails" style="width:500px">
+	   	<div id="entryDetails" style="width:600px">
 			<br>
-			<b><font color="red">Change Selected Entry Temperature:</font></b>
+			<b><font color="red">Cambia Temperatura Selezionata:</font></b>
 		   	<br><br>
 		   	<div id="slider-horizontal" style="height:10px; width:500px"></div>
 		   	<br>
@@ -201,13 +202,13 @@
 		</div>
 		   <br>	
 		<div align="center">
-			<input type="submit" value="Delete Selected Entry" onclick="deleteSelected();" />
+			<input type="submit" value="Cancella Punto Selezionato" onclick="deleteSelected();" />
 		</div>
 		   <br>	
 	</div>
-		<p align="center"  style="width:500px;">
-		   <input type="submit" value="Cancel" onclick="window.location = '/';" />
-		   <input type="submit" value="Save Schedule" onclick="saveSchedule();" />
+		<p align="center"  style="width:600px;">
+		   <input type="submit" value="Home" onclick="window.location = '/';" />
+		   <input type="submit" value="Salva Programma" onclick="saveSchedule();" />
 		</p>
 
 </body>

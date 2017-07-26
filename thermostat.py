@@ -1,4 +1,5 @@
 # coding: latin-1 
+
 ### BEGIN LICENSE
 # Copyright (c) 2016 Jpnos <jpnos@gmx.com>
 
@@ -50,19 +51,22 @@ locale.setlocale(locale.LC_ALL, '')
 
 import kivy
 kivy.require( '1.9.0' ) # replace with your current kivy version !
-
+from threading import  Thread
 from kivy.app import App
 from kivy.uix.button import Button
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.label import Label
 from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.gridlayout import GridLayout
 from kivy.uix.image import Image
 from kivy.clock import Clock
 from kivy.graphics import Color, Rectangle
 from kivy.storage.jsonstore import JsonStore
 from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
-from kivy.uix.dropdown import DropDown
+from urllib2 import URLError
+from kivy.animation import Animation
+from kivy.core.window import Window
+
+
 
 ##############################################################################
 #                                                                            #
@@ -151,6 +155,7 @@ CHILD_DEVICE_DHTOUT				= "DhtOut"
 CHILD_DEVICE_DHTIR				= "DhtIr"
 CHILD_DEVICE_DHTZONE				= "DhtZone"
 CHILD_DEVICE_DHTRELE				= "DhtRele"
+CHILD_DEVICE_DHTCLEAR				= "Clear_dht"
 
 CHILD_DEVICES						= [
 	CHILD_DEVICE_NODE,
@@ -171,7 +176,8 @@ CHILD_DEVICES						= [
 	CHILD_DEVICE_DHTOUT,
 	CHILD_DEVICE_DHTIR,
 	CHILD_DEVICE_DHTZONE,
-	CHILD_DEVICE_DHTRELE
+	CHILD_DEVICE_DHTRELE,
+	CHILD_DEVICE_DHTCLEAR
 ]
 
 CHILD_DEVICE_SUFFIX_UICONTROL		= "Control"
@@ -194,7 +200,7 @@ MSG_SUBTYPE_DHT				= "DhtWifi"
 #                                                                            #
 ##############################################################################
 
-THERMOSTAT_VERSION = "4.0.1"
+THERMOSTAT_VERSION = "4.0.5"
 
 # Debug settings
 
@@ -204,9 +210,11 @@ useTestSchedule = False
 
 # Threading Locks
 
-thermostatLock = threading.RLock()
-weatherLock    = threading.Lock()
-scheduleLock   = threading.RLock()
+thermostatLock	= threading.RLock()
+weatherLock   	= threading.Lock()
+scheduleLock  	= threading.RLock()
+dhtLock			= threading.RLock()
+
 
 
 # Thermostat persistent settings
@@ -308,29 +316,33 @@ priorCorrected	= -100.0
 openDoor	= 21 if not( state.exists( "thermostat" ) ) else int((state.get( "thermostat" )[ "openDoor" ]/state.get( "thermostat" )[ "tempCheckInterval" ])+1)
 openDoorCheck	= 20 if not( state.exists( "thermostat" ) ) else int(state.get( "thermostat" )[ "openDoor" ]/state.get( "thermostat" )[ "tempCheckInterval" ])
 
-setTemp			= 22.0 if not( state.exists( "state" ) ) else state.get( "state" )[ "setTemp" ]
-setice			= 15.0 if not(settings.exists ( "thermostat")) else settings.get("thermostat")["tempice"]
+setTemp				= 22.0 if not( state.exists( "state" ) ) else state.get( "state" )[ "setTemp" ]
+setice				= 15.0 if not(settings.exists ( "thermostat")) else settings.get("thermostat")["tempice"]
 tempHysteresis		= 0.5  if not( settings.exists( "thermostat" ) ) else settings.get( "thermostat" )[ "tempHysteresis" ]
 tempCheckInterval	= 3    if not( settings.exists( "thermostat" ) ) else settings.get( "thermostat" )[ "tempCheckInterval" ]
-out_temp		= 0.0
-temp_vis 		= 0 
+out_temp			= 0.0
+temp_vis 			= 0 
 
 minUIEnabled		= 0    if not( settings.exists( "thermostat" ) ) else settings.get( "thermostat" )[ "minUIEnabled" ]
-minUITimeout		= 3    if not( settings.exists( "thermostat" ) ) else settings.get( "thermostat" )[ "minUITimeout" ]
-lightOff		= 10   if not( settings.exists( "thermostat" ) ) else settings.get( "thermostat" )[ "lightOff" ]
+minUITimeout		= 20    if not( settings.exists( "thermostat" ) ) else settings.get( "thermostat" )[ "minUITimeout" ]
+lightOff			= 60   if not( settings.exists( "thermostat" ) ) else settings.get( "thermostat" )[ "lightOff" ]
 
-minUITimer		= None
-csvSaver		= None
-dhtIrTimer		= None
+minUITimer			= None
+lightOffTimer		= None
+csvSaver			= None
+dhtIrTimer			= None
 dhtZoneTimer		= None
 dhtReleTimer		= None
+dhtClearTimer		= None
+dhtLanTimer			= None
+animationTimer      = None
 
 
 
 csvTimeout		= 300 if not( settings.exists( "thermostat" ) ) else settings.get( "thermostat" )[ "saveCsv" ] 
 
 log( LOG_LEVEL_INFO, CHILD_DEVICE_NODE, MSG_SUBTYPE_CUSTOM + "/settings/temperature/tempScale", str( tempScale ), timestamp=False )
-log( LOG_LEVEL_INFO, CHILD_DEVICE_NODE, MSG_SUBTYPE_CUSTOM + "/settings/temperature/scaleUnits", scaleUnits , timestamp=False )
+#log( LOG_LEVEL_INFO, CHILD_DEVICE_NODE, MSG_SUBTYPE_CUSTOM + "/settings/temperature/scaleUnits", scaleUnits , timestamp=False )
 log( LOG_LEVEL_INFO, CHILD_DEVICE_NODE, MSG_SUBTYPE_CUSTOM + "/settings/temperature/precipUnits", str( precipUnits ), timestamp=False )
 log( LOG_LEVEL_INFO, CHILD_DEVICE_NODE, MSG_SUBTYPE_CUSTOM + "/settings/temperature/precipFactor", str( precipFactor ), timestamp=False )
 log( LOG_LEVEL_INFO, CHILD_DEVICE_NODE, MSG_SUBTYPE_CUSTOM + "/settings/temperature/sensorUnits", str( sensorUnits ), timestamp=False )
@@ -367,14 +379,17 @@ log( LOG_LEVEL_DEBUG, CHILD_DEVICE_NODE, MSG_SUBTYPE_CUSTOM + "/settings/calibra
 
 # DHT and Temp setting:
 
-minTemp			  = 15.0 if not( settings.exists( "thermostat" ) ) else settings.get( "thermostat" )[ "minTemp" ]
-maxTemp			  = 30.0 if not( settings.exists( "thermostat" ) ) else settings.get( "thermostat" )[ "maxTemp" ]
-tempStep		  = 0.5  if not( settings.exists( "thermostat" ) ) else settings.get( "thermostat" )[ "tempStep" ]
-dhtRele			  = 0 if not( settings.exists( "thermostat" ) ) else settings.get( "dht_rele" )[ "rele_enabled" ]
-dhtReleIP		  = "" if not( settings.exists( "thermostat" ) ) else settings.get( "dht_rele" )[ "rele_ip" ]
-dhtIr_number		  = 0 if not( settings.exists( "thermostat" ) ) else settings.get( "dht_ir" )[ "number" ]
-dhtZone_number		  = 0 if not( settings.exists( "thermostat" ) ) else settings.get( "dht_zone" )[ "number" ]
-dhtCheck		  = 0
+minTemp			= 15.0 if not( settings.exists( "thermostat" ) ) else settings.get( "thermostat" )[ "minTemp" ]
+maxTemp			= 30.0 if not( settings.exists( "thermostat" ) ) else settings.get( "thermostat" )[ "maxTemp" ]
+tempStep		= 0.5  if not( settings.exists( "thermostat" ) ) else settings.get( "thermostat" )[ "tempStep" ]
+dhtRele			= 0 if not( settings.exists( "thermostat" ) ) else settings.get( "dht_rele" )[ "rele_enabled" ]
+dhtReleIP		= "" if not( settings.exists( "thermostat" ) ) else settings.get( "dht_rele" )[ "rele_ip" ]
+dhtIr_number	= 0 if not( settings.exists( "thermostat" ) ) else settings.get( "dht_ir" )[ "number" ]
+dhtZone_number	= 0 if not( settings.exists( "thermostat" ) ) else settings.get( "dht_zone" )[ "number" ]
+dhtCheckIr		= 0
+dhtCheckRele	= 0
+dhtCheckZone	= 0
+dhtCheckIce		= 0	
 
 if dhtIr_number > 0:
 	dhtIRLabel = {}
@@ -389,6 +404,7 @@ if dhtIr_number > 0:
 		dhtIR[c,4] = 0	# Umidita
 		dhtIR[c,5] = 0	# stato comando Inviato
 		dhtIR[c,6] = 0 # temperatura impostata
+		dhtIR[c,7] = 1 # setto abilitato
 	
 if dhtZone_number >0:
 	dhtZoneLabel = {}
@@ -402,6 +418,7 @@ if dhtZone_number >0:
 		dhtZone[c,4] = 0	# Umidita
 		dhtZone[c,5] = 0	# stato comando Inviato
 		dhtZone[c,6] = 0 	# temperatura impostata
+		dhtZone[c,7] = 1        # setto abilitato
 		
 log( LOG_LEVEL_INFO, CHILD_DEVICE_DHTRELE, MSG_SUBTYPE_CUSTOM + "/Dht Rele: ", str( dhtRele), timestamp=False )
 log( LOG_LEVEL_INFO, CHILD_DEVICE_DHTZONE, MSG_SUBTYPE_CUSTOM + "//Dht Zone : ", str( dhtZone_number), timestamp=False )
@@ -463,7 +480,7 @@ log( LOG_LEVEL_INFO, CHILD_DEVICE_PIR, MSG_SUBTYPE_TRIPPED, str( pirPin ), times
 
 ##############################################################################
 #                                                                            #
-#       dht22 esp8266 external temp connect                                  #
+#       dht22 esp8266 external temp connect  for cold room                   #
 #                                                                            #
 ##############################################################################
 #dht ext temp setup:
@@ -477,34 +494,38 @@ dhtSchedule     	= 0
 dhtCorrect		= 0 if not( settings.exists( "dhtext") ) else settings.get("dhtext" )[ "dhtCorrect" ]
 dhtweb 			= "http://" + settings.get( "dhtext" )[ "dhtClientIP" ] 
 
-def get_dht( url ):
-		return json.loads( urllib2.urlopen( url, None, 5 ).read() )
 
 def dht_load (dt):
-	global dhtTemp,dhtEnabled,dhtTest,dhtSchedule
+	global dhtTemp,dhtEnabled,dhtTest,dhtSchedule,umiditaLabel
+	Clock.unschedule( dht_load )
 	try	:	
 		dhtUrl	= "http://"+settings.get("dhtext" )[ "dhtClientIP" ]+"/dati"
-		dhtread = get_dht(dhtUrl )
+		dhtread =json.loads( urllib2.urlopen( dhtUrl, None, 3 ).read() )
 		dhtTemp=dhtread["S_temperature"] 
 		dhtUm=dhtread["S_humidity"]
 		dht_label.text = "Dht : T: "+str(dhtTemp)+scaleUnits+" , Ur: "+str(dhtUm)+" %"
+		umiditaLabel.text = str(int(round(dhtUm,0))) +"%"
 		dhtEnabled 	= 1
 		dhtTest		= 0
 		if dhtSchedule	== 0 :
 			dhtSchedule = 1
 			reloadSchedule()
-	except:
+		log( LOG_LEVEL_DEBUG, CHILD_DEVICE_DHTIN, MSG_SUBTYPE_CUSTOM + "/read/dhtIn/", dhtUrl, timestamp=False )
+	except :
 		dht_label.text = ""	
 		dhtTest += 1	
 		dhtEnabled = 0
 		dhtSchedule = 0
 	if dhtTest <= 5:
-		Clock.schedule_once( dht_load, dhtInterval )	
+		Clock.schedule_once( dht_load, dhtInterval )
+		log( LOG_LEVEL_DEBUG, CHILD_DEVICE_DHTIN, MSG_SUBTYPE_CUSTOM + "/read/dhtin/number_let<5", str( dhtTest), timestamp=False )	
 	elif dhtTest >=7 :
-		Clock.schedule_once(dht_load,120)	
+		Clock.schedule_once(dht_load,120)
+		log( LOG_LEVEL_ERROR, CHILD_DEVICE_DHTIN, MSG_SUBTYPE_CUSTOM + "/read/dhtin/number_let>7", str( dhtTest), timestamp=False )	
 	else:
 		reloadSchedule()
 		Clock.schedule_once(dht_load,60)
+		log( LOG_LEVEL_ERROR, CHILD_DEVICE_DHTIN, MSG_SUBTYPE_CUSTOM + "/read/dhtin/number_let=6", str( dhtTest), timestamp=False )
 
 ##############################################################################
 #                                                                            #
@@ -517,89 +538,152 @@ dhtoutweb 		= "http://" + settings.get( "dhtout" )[ "dhtoutIP" ] + "/dati"
 def dhtoutRead():
 	global out_temp,out_humidity,dhtoutweb
 	try:
-		dhtoutread = get_dht(dhtoutweb)
+		dhtoutread = json.loads( urllib2.urlopen( dhtoutweb, None, 3 ).read() )
 		out_temp=dhtoutread["S_temperature"] 
 		out_humidity=dhtoutread["S_humidity"]
+		log( LOG_LEVEL_INFO, CHILD_DEVICE_DHTOUT, MSG_SUBTYPE_CUSTOM + "/read/dhtout/temp", str( out_temp), timestamp=False )
 	except:
 		out_temp= 0
 		out_humidity=0
-		
+		log( LOG_LEVEL_ERROR, CHILD_DEVICE_DHTOUT, MSG_SUBTYPE_CUSTOM + "/read/dhtout/", dhtoutweb, timestamp=False )
 ##############################################################################
 #                                                                            #
 #       dht22 esp8266 ir read Temperature    	                             #
 #                                                                            #
 ##############################################################################	
 def dhtIrRead(dt):
-	if dhtIr_number>=1:
-		global dhtCheck, dhtIrTimer,dhtIRLabel
-		dhtIrTimer = Clock.schedule_once( dhtIrRead, dhtIR[0,0])
-		for c in range(0, dhtIr_number):
-			try:
-				dhtirread = json.loads( urllib2.urlopen( dhtIR[c,1]+"/dati", None, 5 ).read() )
-				dhtIR[c,3]=dhtirread["S_temperature"] 
-				dhtIR[c,4]=dhtirread["S_humidity"]
-				dhtIR[c,5]=dhtirread["S_control"]
-				dhtIR[c,6]=dhtirread["S_setTemp"]
-				dhtCheck = dhtirread["S_control"]
-				labelState = "ON" if (dhtCheck == 1) else  "OFF"
-				dhtIRLabel[c,0].text =  "[b]    - "+dhtIR[c,2] + "[/b] - \n \n " + dhtIR[c,1] +"\n temp : "+ str(dhtIR[c,3]) + "\n Umidita : " +str(dhtIR[c,4])+ "% \n set Temp : " +str(round(float(dhtIR[c,6]),1))+"\n Stato : " + labelState
-			except:
-				dhtcheck = 0
-				log( LOG_LEVEL_INFO, CHILD_DEVICE_DHTIR, MSG_SUBTYPE_CUSTOM + "/read/dhtir/number", str( c), timestamp=False )	
+	if dhtIr_number > 0:
+		global dhtIrTimer
+		Clock.unschedule( dhtIrTimer )
+		dhtCheckIr = 0
+		with dhtLock:
+			for c in range(0, dhtIr_number):
+				t = Thread(target=dhtIrThread(c))
+				t.start() 
+		dhtIrTimer = Clock.schedule_once( dhtIrRead, dhtIR[0,0])	
+def dhtIrThread(c):
+	global dhtCheckIr, dhtIRLabel
+	if dhtIR[c,7] == 1:
+		try:
+			dhtirread = json.loads( urllib2.urlopen( dhtIR[c,1]+"/dati", None, 3 ).read() )
+			dhtIR[c,3]=dhtirread["S_temperature"] 
+			dhtIR[c,4]=dhtirread["S_humidity"]
+			dhtIR[c,5]=dhtirread["S_control"]
+			dhtIR[c,6]=dhtirread["S_setTemp"]
+			dhtIR[c,7]=1
+			if dhtIR[c,5] == 1 and dhtCheckIr == 0:
+				dhtCheckIr = dhtirread["S_control"]						
+			elif dhtIR[c,5] == 2 and dhtCheckIr == 0:
+				dhtCheckIr = dhtirread["S_control"]					
+			elif dhtIR[c,5] <>  dhtCheckIr and dhtCheckIr <> 0:
+				dhtCheckIr = 5000
+			labelState = "ON" if (dhtIR[c,5] == 1) else  "OFF"
+			dhtIRLabel[c,0].text =  "[b]    - "+dhtIR[c,2] + "[/b] - \n \n " + dhtIR[c,1] +"\n temp : "+ str(dhtIR[c,3]) + "\n Umidita : " +str(dhtIR[c,4])+ "% \n set Temp : " +str(round(float(dhtIR[c,6]),1))+"\n Stato : " + labelState
+			log( LOG_LEVEL_DEBUG, CHILD_DEVICE_DHTIR, MSG_SUBTYPE_CUSTOM + "/read/dhtir/number", str( c), timestamp=False )
+		except :
+			dhtIR[c,7]=0	
+			dhtIRLabel[c,0].text =  "[b]    - "+dhtIR[c,2] + "[/b] - \n \n " + dhtIR[c,1]+"\n Zona Non raggiungibile\n\n\n"
+			log( LOG_LEVEL_ERROR, CHILD_DEVICE_DHTIR, MSG_SUBTYPE_CUSTOM + "/read/dhtir/number", str( c)+" - ", timestamp=False )
+	
+	else:
+		log( LOG_LEVEL_ERROR, CHILD_DEVICE_DHTIR, MSG_SUBTYPE_CUSTOM + "/read/dhtir/number", dhtIR[c,1] +" - Disabled", timestamp=False )	
 ##############################################################################
 #                                                                            #
 #       dht22 esp8266 ir send Temperature		                     #
 #                                                                            #
-##############################################################################	
-def dhtIRSend():
+##############################################################################
+	
+def dhtIRSend(dt):
 	if dhtIr_number>=1:
-		for c in range(0, dhtIr_number):
-			try:	
-				if setTemp >= 27:
-					f = urllib2.urlopen(dhtIR[c,1]+"/irSender?99")
-				else:
-					f = urllib2.urlopen(dhtIR[c,1]+"/irSender?"+str(setTemp))
-			except:
-				log( LOG_LEVEL_INFO, CHILD_DEVICE_DHTIR, MSG_SUBTYPE_CUSTOM + "/send/dhtir/number", str( c), timestamp=False )	
+		with dhtLock:
+			for c in range(0, dhtIr_number):
+				t = Thread(target=dhtIRSendThread(c))
+				t.start() 
+				
+def dhtIRSendThread(c):
+	if dhtIR[c,7] == 1:
+		try:	
+			if setTemp >= 27:
+				f = urllib2.urlopen(dhtIR[c,1]+"/irSender?99", None, 3)
+			else:
+				f = urllib2.urlopen(dhtIR[c,1]+"/irSender?"+str(setTemp))
+				log( LOG_LEVEL_DEBUG, CHILD_DEVICE_DHTIR, MSG_SUBTYPE_CUSTOM + "/send/dhtir/number", str( c), timestamp=False )	
+		except :
+			log( LOG_LEVEL_ERROR, CHILD_DEVICE_DHTIR, MSG_SUBTYPE_CUSTOM + "/send/dhtir/number", str( c)+"- ", timestamp=False )	
+	else:
+		log( LOG_LEVEL_ERROR, CHILD_DEVICE_DHTIR, MSG_SUBTYPE_CUSTOM + "/send/dhtir/number", dhtIR[c,1]+" - Disabled", timestamp=False )
 		
 ##############################################################################
 #                                                                            #
-#       dht22 esp8266 zone read				                     #
+#       dht22 esp8266 zone read				                    			 #
 #                                                                            #
 ##############################################################################
+
 def dhtZoneRead(dt):
 	if dhtZone_number >=1:
-		global dhtCheck ,dhtZoneTimer
-		dhtCheck = 0
-		for c in range(0, dhtZone_number):
-			try:
-				dhtzoneread = json.loads( urllib2.urlopen( dhtZone[c,1]+"/dati", None, 5 ).read() )
-				dhtZone[c,3]=dhtzoneread["S_temperature"] 
-				dhtZone[c,4]=dhtzoneread["S_humidity"]
-				dhtZone[c,5]= dhtzoneread["S_control"]
-				dhtZone[c,6]=dhtzoneread["S_setTemp"]
-				dhtCheck = dhtzoneread["S_control"]
-				labelState = "ON" if (dhtCheck == 3) else  "OFF"
-				dhtZoneLabel[c,0].text =  "[b]    - "+dhtZone[c,2] + "[/b] - \n \n " + dhtZone[c,1] +"\n temp : "+ str(dhtZone[c,3]) + "\n Umidita : " +str(dhtZone[c,4])+ "% \n set Temp : " +str(round(float(dhtZone[c,6]),1))+"\n Stato : " + labelState
+		global dhtCheckZone ,dhtZoneLabel,dhtZoneTimer
+		Clock.unschedule( dhtZoneTimer )
+		dhtCheckZone = 0
+		with dhtLock:
+			for c in range(0, dhtZone_number):
+				t = Thread(target=dhtZoneReadThread(c))
+				t.start() 
+			dhtZoneTimer = Clock.schedule_once( dhtZoneRead, dhtZone[0,0])
 				
-			except:
-				log( LOG_LEVEL_INFO, CHILD_DEVICE_DHTZONE, MSG_SUBTYPE_CUSTOM + "/read/dhtzone/number", str( c), timestamp=False )
-				dhtcheck = 0
-		dhtZoneTimer = Clock.schedule_once( dhtZoneRead, dhtZone[0,0])
+def dhtZoneReadThread(c):
+	global dhtCheckZone ,dhtZoneLabel				
+	if dhtZone[c,7] == 1:
+		try:
+			dhtzoneread = json.loads( urllib2.urlopen( dhtZone[c,1]+"/dati", None, 3 ).read() )
+			dhtZone[c,3]=dhtzoneread["S_temperature"] 
+			dhtZone[c,4]=dhtzoneread["S_humidity"]
+			dhtZone[c,5]= dhtzoneread["S_control"]
+			dhtZone[c,6]=dhtzoneread["S_setTemp"]
+			if dhtZone[c,5] == 3 and dhtCheckZone == 0:
+				dhtCheckZone = dhtzoneread["S_control"]						
+			elif dhtZone[c,5] == 100 and dhtCheckZone == 0:
+				dhtCheckZone = dhtzoneread["S_control"]					
+			elif dhtZone[c,5] <>  dhtCheckZone and dhtCheckZone <> 0:
+				dhtCheckZone = 3
+			dhtZone[c,7] = 1	
+			labelState = "ON" if (dhtZone[c,5] == 3) else  "OFF"
+			dhtZoneLabel[c,0].text =  "[b]    - "+dhtZone[c,2] + "[/b] - \n \n " + dhtZone[c,1] +"\n temp : "+ str(dhtZone[c,3]) + "\n Umidita : " +str(dhtZone[c,4])+ "% \n set Temp : " +str(round(float(dhtZone[c,6]),1))+"\n Stato : " + labelState
+			log( LOG_LEVEL_DEBUG, CHILD_DEVICE_DHTZONE, MSG_SUBTYPE_CUSTOM + "/read/dhtzone/number", str( c), timestamp=False )
+		except :
+			dhtZone[c,7] = 0
+			log( LOG_LEVEL_ERROR, CHILD_DEVICE_DHTZONE, MSG_SUBTYPE_CUSTOM + "/read/dhtzone/number", dhtZone[c,1]+" - ", timestamp=False )
+			dhtZoneLabel[c,0].text =  "[b]    - "+dhtZone[c,2] + "[/b] - \n \n " + dhtZone[c,1]+"\n Zona Non raggiungibile\n\n\n"
+	else:
+				
+		log( LOG_LEVEL_ERROR, CHILD_DEVICE_DHTZONE, MSG_SUBTYPE_CUSTOM + "/read/dhtzone/number", dhtZone[c,1] +" - Disabled", timestamp=False )
+			
 ##############################################################################
 #                                                                            #
-#       dht22 esp8266 set zone				                     #
+#       dht22 esp8266 set zone				                                 #
 #                                                                            #
 ##############################################################################
-def dhtZoneSend(tempsetting):
+def dhtZoneSend(dt):
+	global setTemp,dhtCheckIce
 	if dhtZone_number >=1:
-		for c in range(0, dhtZone_number):
-			try:	
-				f = urllib2.urlopen(dhtZone[c,1]+"/zoneON?"+ str(tempsetting))
-
-			except:
-				
-				log( LOG_LEVEL_INFO, CHILD_DEVICE_DHTZONE, MSG_SUBTYPE_CUSTOM + "/send/dhtzone/number", str( c), timestamp=False )
+		with dhtLock:
+			for c in range(0, dhtZone_number):
+				t = Thread(target=dhtZoneSendThread(c))
+				t.start() 
+def dhtZoneSendThread(c):
+	global setTemp,dhtCheckIce
+	if dhtCheckIce == 0:
+		tempsetting = setTemp
+	else:
+		tempsetting = setice
+	if dhtZone[c,7] == 1:
+		try:	
+			f = urllib2.urlopen(dhtZone[c,1]+"/zoneON?"+ str(tempsetting), None, 3)
+			log( LOG_LEVEL_DEBUG, CHILD_DEVICE_DHTZONE, MSG_SUBTYPE_CUSTOM + "/send//tempsetting/dhtzone/number", str( c), timestamp=False )
+		except :
+			log( LOG_LEVEL_ERROR, CHILD_DEVICE_DHTZONE, MSG_SUBTYPE_CUSTOM + "/send/tempsetting/dhtzone/number", str( c)+" - ", timestamp=False )
+		
+	else:
+		log( LOG_LEVEL_ERROR, CHILD_DEVICE_DHTZONE, MSG_SUBTYPE_CUSTOM + "/send/dhtzone/number", dhtZone[c,1] +" - Disabled", timestamp=False )
 		
 ##############################################################################
 #                                                                            #
@@ -607,50 +691,95 @@ def dhtZoneSend(tempsetting):
 #                                                                            #
 ##############################################################################
 def dhtSend(comando):
-	if dhtZone_number >=1:
+	if dhtZone_number > 0:
 		for c in range(0, dhtZone_number):
-			try: 	
-				f = urllib2.urlopen(dhtZone[c,1]+"/"+ comando)
-			
-			except:
-				log( LOG_LEVEL_INFO, CHILD_DEVICE_DHTZONE, MSG_SUBTYPE_CUSTOM + "/send/dhtzone/command", comando, timestamp=False )
-				
-	if dhtIr_number>=1:	
-		for c in range(0, dhtIr_number):	
-			try:
-				f = urllib2.urlopen(dhtIR[c,1]+"/"+ comando)
-				
-			except:
-				
-				log( LOG_LEVEL_INFO, CHILD_DEVICE_DHTIR, MSG_SUBTYPE_CUSTOM + "/send/dhtIr/command", comando, timestamp=False )
+			t = Thread(target=dhtSendZoneCommand(c,comando))
+			t.start() 
+	if dhtIr_number > 0:
+		for c in range(0, dhtIr_number):		
+			t = Thread(target=dhtSendIrCommand(c,comando))
+			t.start() 
 	if dhtRele == 1:
 		try: 	
-			f = urllib2.urlopen("http://"+dhtReleIP+"/"+ comando)
-			
+			f = urllib2.urlopen("http://"+dhtReleIP+"/"+ comando, None, 3)
+			log( LOG_LEVEL_DEBUG, CHILD_DEVICE_DHTRELE, MSG_SUBTYPE_CUSTOM + "/send/dhtRele/command", comando, timestamp=False )
 		except:
+			log( LOG_LEVEL_ERROR, CHILD_DEVICE_DHTRELE, MSG_SUBTYPE_CUSTOM + "/send/dhtRele/command", comando, timestamp=False )
+				
+def dhtSendZoneCommand(c,comando):
+	if dhtZone[c,7] == 1:
+		try: 	
+			f = urllib2.urlopen(dhtZone[c,1]+"/"+ comando, None, 3)
+			log( LOG_LEVEL_DEBUG, CHILD_DEVICE_DHTZONE, MSG_SUBTYPE_CUSTOM + "/send/dhtzone/command", comando, timestamp=False )
+		except:
+			log( LOG_LEVEL_ERROR, CHILD_DEVICE_DHTZONE, MSG_SUBTYPE_CUSTOM + "/send/dhtzone/command", comando, timestamp=False )			
 			
-			log( LOG_LEVEL_INFO, CHILD_DEVICE_DHTRELE, MSG_SUBTYPE_CUSTOM + "/send/dhtRele/command", comando, timestamp=False )
+def dhtSendIrCommand(c,comando):
+	if dhtIR[c,7] == 1:
+		try:
+			f = urllib2.urlopen(dhtIR[c,1]+"/"+ comando, None, 3)
+			log( LOG_LEVEL_DEBUG, CHILD_DEVICE_DHTIR, MSG_SUBTYPE_CUSTOM + "/send/dhtIr/command", comando, timestamp=False )
+		except:
+			log( LOG_LEVEL_ERROR, CHILD_DEVICE_DHTIR, MSG_SUBTYPE_CUSTOM + "/send/dhtIr/command", comando, timestamp=False )
+		
 
 def dhtReleSend(comando):
 	if dhtRele == 1:
 			try: 	
-				f = urllib2.urlopen("http://"+dhtReleIP+"/"+ comando)
-				
+				f = urllib2.urlopen("http://"+dhtReleIP+"/"+ comando, None, 3)
+				log( LOG_LEVEL_DEBUG, CHILD_DEVICE_DHTRELE, MSG_SUBTYPE_CUSTOM + "/send/dhtRele/command", comando, timestamp=False )
 			except:
 				
-				log( LOG_LEVEL_INFO, CHILD_DEVICE_DHTRELE, MSG_SUBTYPE_CUSTOM + "/send/dhtRele/command", comando, timestamp=False )
+				log( LOG_LEVEL_ERROR, CHILD_DEVICE_DHTRELE, MSG_SUBTYPE_CUSTOM + "/send/dhtRele/command", comando, timestamp=False )
 def dhtReleRead(dt):
 	if dhtRele == 1:
-		global dhtCheck,dhtReleTimer
+		global dhtCheck,dhtReleTimer,dhtCheckRele
+		Clock.unschedule( dhtReleTimer )
+		dhtCheckRele=0
 		try:
-			dhtReleread = json.loads( urllib2.urlopen( "http://"+dhtReleIP+"/dati", None, 5 ).read() )
-			dhtCheck =  dhtReleread["S_control"]
-			
+			dhtReleread = json.loads( urllib2.urlopen( "http://"+dhtReleIP+"/dati", None, 3 ).read() )
+			dhtCheckRele =  dhtReleread["S_control"]
+			log( LOG_LEVEL_DEBUG, CHILD_DEVICE_DHTRELE, MSG_SUBTYPE_CUSTOM + "/read/dhtRele/", str(dhtCheckRele), timestamp=False )
 		except:
 			
-			log( LOG_LEVEL_INFO, CHILD_DEVICE_DHTRELE, MSG_SUBTYPE_CUSTOM + "/read/dhtRele/command", comando, timestamp=False )
-			dhtcheck = 0
+			log( LOG_LEVEL_ERROR, CHILD_DEVICE_DHTRELE, MSG_SUBTYPE_CUSTOM + "/read/dhtRele/", str(dhtCheckRele), timestamp=False )
+			dhtcheckRele = 5000
 		dhtReleTimer = Clock.schedule_once( dhtReleRead,settings.get( "dht_rele" )[ "rele_timeout" ])
+		
+def test_dht(dt):
+	with dhtLock:
+		if dhtZone_number > 0:
+			for c in range(0, dhtZone_number):
+				t = Thread(target=testDhtLan(c,1))
+				t.start() 
+		if dhtIr_number > 0:
+			for c in range(0, dhtIr_number):		
+				t = Thread(target=testDhtLan(c,2))
+				t.start() 
+				
+	dhtLanTimer=Clock.schedule_once( test_dht, 900)		
+def testDhtLan(c,comando):
+	try:
+		if comando == 1:
+			dhtLanRead = urllib2.urlopen( dhtZone[c,1]+"/testLan", None, 3 ).read() 
+		elif comando == 2:
+			dhtLanRead = urllib2.urlopen( dhtIR[c,1]+"/testLan", None, 3 ).read()
+		if comando == 1:
+			dhtZone[c,7] = 1
+			log( LOG_LEVEL_INFO, CHILD_DEVICE_DHTZONE, MSG_SUBTYPE_CUSTOM + "/test/dhtZone/", "Presente", timestamp=False )
+		elif comando == 2:
+			dhtIR[c,7]=1
+			log( LOG_LEVEL_INFO, CHILD_DEVICE_DHTIR, MSG_SUBTYPE_CUSTOM + "/read/dhtRele/", "Presente", timestamp=False )
+	except:
+		if comando == 1:
+			dhtZone[c,7] = 0
+			dhtZoneLabel[c,0].text =  "[b]    - "+dhtZone[c,2] + "[/b] - \n \n " + dhtZone[c,1]+"\n\n Zona Non raggiungibile\n\n"
+			log( LOG_LEVEL_ERROR, CHILD_DEVICE_DHTZONE, MSG_SUBTYPE_CUSTOM + "/test/dhtZone/", "Non Raggiungibile", timestamp=False )
+		elif comando == 2:
+			dhtIR[c,7] = 0
+			dhtIRLabel[c,0].text =  "[b]    - "+dhtIR[c,2] + "[/b] - \n \n " + dhtIR[c,1]+"\n\n Zona Non raggiungibile\n\n"
+			log( LOG_LEVEL_ERROR, CHILD_DEVICE_DHTZONE, MSG_SUBTYPE_CUSTOM + "/test/dhtZone/", "Non Raggiungibile", timestamp=False )
+
 ##############################################################################
 #                                                                            #
 #       UI Controls/Widgets                                                  #
@@ -666,23 +795,27 @@ controlColours = {
 
 
 def setControlState( control, state ):
-	global setTemp,tempStep	
+	global setTemp,tempStep,dhtIr_number
 	with thermostatLock:
 		control.state = state
 		if control == coolControl and state == "down":
-			tempStep = 1
-			setTemp = round(int(setTemp),1)
-		elif control == heatControl and state =="down" : 
-			tempStep  = 0.5  if not( settings.exists( "thermostat" ) ) else settings.get( "thermostat" )[ "tempStep" ]
-		
+			if dhtIr_number > 0:
+				tempStep = 1
+				setTemp = round(int(setTemp),1)
+			else:
+				setControlState( coolControl, "normal")
 			
+		elif control == heatControl and state == "down":
+			tempStep  = 0.5  if not( settings.exists( "thermostat" ) ) else settings.get( "thermostat" )[ "tempStep" ]
+			
+		elif coolControl.state == "normal" and heatControl.state == "normal":
+			tempStep  = 0.5  if not( settings.exists( "thermostat" ) ) else settings.get( "thermostat" )[ "tempStep" ]	
 		#if state == "normal":
 		#	control.background_color = controlColours[ "normal" ]
 		#else:
 		#	control.background_color = controlColours[ control.text.replace( "[b]", "" ).replace( "[/b]", "" ) ]
-		
 		controlLabel = control.text.replace( "[b]", "" ).replace( "[/b]", "" ).lower()
-		log( LOG_LEVEL_STATE, controlLabel +  CHILD_DEVICE_SUFFIX_UICONTROL, MSG_SUBTYPE_BINARY_STATUS, "0" if state == "normal" else "1" )
+		log( LOG_LEVEL_INFO, controlLabel +  CHILD_DEVICE_SUFFIX_UICONTROL, MSG_SUBTYPE_BINARY_STATUS, "0" if state == "normal" else "1" )
 
 coolControl = ToggleButton( text="[b]       Estate  [/b]", 
 							markup=True, 
@@ -748,7 +881,7 @@ def get_status_string():
 		sched = "None"
 		temperature = 0
 		if holdControl.state == "down" :
-			sched = "Hold"
+			sched = "Manuale"
 			if heatControl.state == "down":
 				testText="Caldaia"
 			else:
@@ -760,13 +893,13 @@ def get_status_string():
 		elif heatControl.state == "down":
 			testText="Caldaia"
 			if dhtSchedule == 0:				
-				sched = "Heat"
+				sched = "Inverno"
 			else:
-				sched = "Dht"
+				sched = "Dht "
 			temperature = setTemp
 		elif coolControl.state == "down":
 			testText="Clima"
-			sched = "Cool"
+			sched = "Estate"
 			temperature = setTemp
 		else:
 		    testText="Caldaia"
@@ -782,20 +915,20 @@ def get_status_string():
 
 		setLabel.color = (1,1,1,1)
 	
-		return 	   "  Temp. Set: " +str(temperature)+scaleUnits+"\n  "+\
-			   testText +" :    " + ( "[i][b][color=ff3333]On[/b][/i][/color]" if testHeat else "Off" ) + "\n  "+\
-			   "Sched:   " + sched
+		return 	   "  Temp. Set: [b][color=#5F81F1]"+str(temperature)+scaleUnits+"[/b][/color]\n  "+\
+			   testText +" :    " + ( "[i][b][color=ff3333]On[/b][/i][/color]" if testHeat else "[b][color=#5F81F1]Off[/b][/color]" ) + "\n  "+\
+			   "Prog :  [b][color=#5F81F1]" + sched+"[/b][/color]"
 
 
 versionLabel	= Label( text="Thermostat v" + str( THERMOSTAT_VERSION ), size_hint = ( None, None ), font_size='10sp', markup=True, text_size=( 150, 20 ) )
+umiditaLabel	= Label( text="" , size_hint = ( None, None ), font_size='20sp', markup=True, text_size=( 150, 70 ) )
 currentLabel	= Label( text="[b]" + str( currentTemp ) + scaleUnits+"[/b]", size_hint = ( None, None ), font_size='100sp', markup=True, text_size=( 300, 200 ) )
-altCurLabel	= Label( text=currentLabel.text, size_hint = ( None, None ), font_size='100sp', markup=True, text_size=( 300, 200 ), color=( 0.5, 0.5, 0.5, 0.2 ) )
-coolCurLabel	= Label( text=currentLabel.text, size_hint = ( None, None ), font_size='100sp', markup=True, text_size=( 300, 200 ), color=( 0.5, 0.5, 0.5, 0.2 ) )
+altCurLabel	= Label( text=currentLabel.text, size_hint = ( None, None ), font_size='100sp', markup=True, text_size=( 300, 200 ), color=( 0.5, 0.5, 0.5, 0.4 ) )
 
 setLabel     = Label( text= "[b]"+ str( round(setTemp,1) ) +" "+ "[/b]", size_hint = ( None, None ), font_size='40sp', markup=True, text_size=( 120, 120 ) )
-statusLabel  = Label( text=get_status_string(), size_hint = ( None, None ),  font_size='30sp', markup=True, text_size=( 240, 230 ) )
+statusLabel  = Label( text="\n   Thermostat \n    version "+str( THERMOSTAT_VERSION )+"\n    Starting.....", size_hint = ( None, None ),  font_size='30sp', markup=True, text_size=( 240, 230 ) )
 
-altStatusLabel = Label( text=get_status_string(), size_hint = ( None, None),font_size='30sp', markup=True, text_size=( 240, 230 ),color=(0.5,0.5,0.5,0.2))
+altStatusLabel = Label( text="", size_hint = ( None, None), markup=True, font_size = '30sp', text_size=( 400, 400 ),color=(0.3,0.3,0.3,0.4))
 
 dateLabel	= Label( text="[b]" + time.strftime("%d %b %a, %Y") + "[/b]", size_hint = ( None, None ), font_size='25sp', markup=True, text_size=( 270, 40 ) )
 
@@ -839,10 +972,6 @@ for c in range (0,3):
 	forecastImg.append(Image( source="web/images/na.png", size_hint = ( None, None ) )) 
 forecastSummary = Label( text="", size_hint = ( None, None ), font_size='18sp',  markup=True, text_size=( 800, 50 ))
 
-def get_weather( url ):
-	return json.loads( urllib2.urlopen( url, None, weatherURLTimeout ).read() )
-
-
 
 def get_cardinal_direction( heading ):
 	directions = [ "N", "NE", "E", "SE", "S", "SW", "W", "NW", "N" ]
@@ -851,11 +980,11 @@ def get_cardinal_direction( heading ):
 	
 def display_current_weather( dt ):
 	with weatherLock:
-		global out_temp,temp_vis
+		global out_temp,out_humidity,temp_vis
 		interval = weatherRefreshInterval
 		try:
 	
-			weather = get_weather( weatherURLCurrent )
+			weather = json.loads( urllib2.urlopen( weatherURLCurrent, None, weatherURLTimeout ).read() ) 
 			weatherImg.source = "web/images/" + weather[ "currently" ][ "icon" ] + ".png" 
 			weatherSummaryLabel.text = "[b]" + weather[ "currently" ][ "summary" ] + "[/b]"
 			forecastSummary.text = "[b]" + weather["daily"]["summary"] + "[/b]"
@@ -878,30 +1007,27 @@ def display_current_weather( dt ):
 			) )	
 			
 				forecastDetailsLabel[c].text = forecastText	
-			
 			if dhtoutEnabled == 1:
 				dhtoutRead()
-				
 				if out_temp == 0:				
 					temp_vis = str( int( round( weather[ "currently" ][ "temperature" ], 1 ) ) )
-					
+					um_vis = str( int(round(weather[ "currently" ][ "humidity" ],2 )*100))
 				else:
+			
 					temp_vis = str(round(out_temp,1))
 					um_vis = str(int(round(out_humidity,0)))
-					
 			else:
 				temp_vis = str( int( round( weather[ "currently" ][ "temperature" ], 1 ) ) )
 							
-				um_vis = str( int(round(weather[ "currently" ][ "humidity" ],2 )*100))
-				
+				um_vis = str( int(round(weather[ "currently" ][ "humidity" ],2 )*100))	
 			weatherDetailsLabel.text = "\n".join( (
 				"Temp :   " + temp_vis + " " +scaleUnits,
 				"  Ur :   " + um_vis + "%"
+				
 				#"Vento:       " + str( int( round( weather[ "wind" ][ "speed" ] * windFactor ) ) ) + windUnits + " " + get_cardinal_direction( weather[ "wind" ][ "deg" ] ),
 				#"Nuvole:     " + str( weather[ "clouds" ][ "all" ] ) + "%",
 			) )
-		
-			log( LOG_LEVEL_INFO, CHILD_DEVICE_WEATHER_CURR, MSG_SUBTYPE_TEXT, weather[ "currently" ][ "summary" ] + "; " + re.sub( '\n', "; ", re.sub( ' +', ' ', weatherDetailsLabel.text ).strip() ) )
+			log( LOG_LEVEL_INFO, CHILD_DEVICE_WEATHER_CURR, MSG_SUBTYPE_TEXT, weather[ "currently" ][ "summary" ] + "; " + re.sub( '\n', "; ", re.sub( ' +', ' ', temp_vis ).strip() ) )
 			
 		except:
 			interval = weatherExceptionInterval
@@ -957,7 +1083,7 @@ def restart():
 		logFile.flush()
 		os.fsync( logFile.fileno() )
 		logFile.close()
-
+	
 	os.execl( sys.executable, 'python', __file__, *sys.argv[1:] )	# This does not return!!!
 
 
@@ -982,67 +1108,80 @@ def setLogLevel( msg ):
 
 def change_system_settings():
 	with thermostatLock:
-		global csvSaver,dhtCheck
+		global csvSaver,dhtCheckRele,dhtCheckZone,dhtCheckIr,dhtCheckIce
 		hpin_start = str( GPIO.input( heatPin ) )
 		cool_start = str( GPIO.input( coolPin))
+		#print "Stato check Dht  - ",dhtCheckIr,dhtCheckZone,dhtCheckRele
 		if heatControl.state == "down":	
-			if dhtCheck == 0 :
-				dhtZoneSend(setTemp)
-				dhtZoneRead(2)
-			if setTemp >= currentTemp + tempHysteresis or dhtCheck == 1 :
-				if dhtRele == 1 and dhtCheck == 200:
+			if dhtCheckZone == 0 :
+				Clock.unschedule( dhtIrTimer )
+				dhtReleRead(0.5)
+				dhtCheckIr = 0
+				dhtCheckIce = 0
+				dhtZoneSend(0.5)
+				dhtZoneRead(0.5)
+				if dhtRele == 1:
+					dhtReleSend("releOFF")
+					dhtReleRead(0.5)
+			if setTemp >= currentTemp + tempHysteresis or dhtCheckZone == 3 :
+				if dhtRele == 1 and dhtCheckRele == 200:
 					dhtReleSend("releON")
 				GPIO.output( heatPin, GPIO.LOW )
 				GPIO.output( coolPin,GPIO.HIGH)
 			elif setTemp <= currentTemp:
-				if dhtRele == 1 and dhtCheck == 201:	
+				if dhtRele == 1 and dhtCheckRele == 201:	
 					dhtReleSend("releOFF")
 				GPIO.output( heatPin, GPIO.HIGH )
 				GPIO.output( coolPin, GPIO.HIGH)
 		elif coolControl.state== "down":
-			if dhtCheck == 1 :
+			if dhtCheckIr == 1 :
 				GPIO.output( coolPin, GPIO.LOW)
 				GPIO.output( heatPin, GPIO.HIGH)
 			
-			elif dhtCheck == 2:
+			elif dhtCheckIr == 2:
 				GPIO.output( coolPin, GPIO.HIGH)
 				GPIO.output( heatPin, GPIO.HIGH )
 				
 			else:
 				GPIO.output( coolPin, GPIO.LOW)
 				GPIO.output( heatPin, GPIO.HIGH )
-				dhtIRSend()
-				dhtIrRead(1)
+				Clock.unschedule( dhtZoneTimer )
+				Clock.unschedule( dhtReleTimer )
+				dhtCheckZone = 0
+				dhtIRSend(0.5)
+				dhtIrRead(0.5)
+				
 				
 				
 		else:
 		#modifica per minima temp antigelo 
-			if dhtCheck == 0 :
-				dhtZoneSend(setice)
-			if setice >= currentTemp +tempHysteresis and holdControl != "down" or dhtCheck == 1:
+			if dhtCheckZone == 0 :
+				dhtCheckIce = 1
+				Clock.unschedule( dhtIrTimer )
+				dhtCheckIr = 0
+				dhtZoneSend(0.5)
+				dhtZoneRead(0.5)
+				if dhtRele == 1:
+					dhtReleSend("releOFF")
+					dhtReleRead(0.5)
+			if setice >= currentTemp +tempHysteresis or dhtCheckZone == 3:
+				if dhtRele == 1 and dhtCheckRele == 200:
+					dhtReleSend("releON")
 				GPIO.output(heatPin,GPIO.LOW)
 				GPIO.output( coolPin, GPIO.HIGH)
 			elif setice <=currentTemp:
+				if dhtRele == 1 and dhtCheckRele == 201:	
+					dhtReleSend("releOFF")
 				GPIO.output(heatPin,GPIO.HIGH)
 				GPIO.output( coolPin, GPIO.HIGH)
-			if holdControl.state == "down":
-			    	if setTemp >= currentTemp + tempHysteresis or dhtCheck == 1:
-			    		if dhtRele == 1:
-						dhtReleSend("releON")
-			    	    	GPIO.output(heatPin, GPIO.LOW)
-			    	    	GPIO.output( coolPin, GPIO.HIGH)
-			    	else:
-			    	    	if dhtRele == 1:
-						dhtReleSend("releOFF")
-				    	GPIO.output( heatPin, GPIO.HIGH )
-				    	GPIO.output( coolPin, GPIO.HIGH)
 
 
 		# save the thermostat state in case of restart
 		state.put( "state", setTemp=setTemp, heatControl=heatControl.state,  coolControl=coolControl.state, holdControl=holdControl.state,dhtEnabled=dhtEnabled)
 		
 		statusLabel.text = get_status_string()
-		altStatusLabel.text = get_status_string()
+		untrusttext= statusLabel.text.replace("[color=#5F81F1]","").replace("[/color]","").replace("[color=ff3333]","")#.replace("[b]","").replace("[/b]","")
+		altStatusLabel.text = "           "+timeLabel.text+"\n[size=100sp][b] "+str(currentTemp)+"[/b][/size]\n"+untrusttext
 		setLabel.text = "[b]"+str(setTemp)+"[/b]"
 		if hpin_start != str( GPIO.input( heatPin ) ):
 			Clock.unschedule(csvSaver)
@@ -1056,38 +1195,47 @@ def change_system_settings():
 # This callback will be bound to the touch screen UI buttons:
 
 def control_callback( control ):
-	global setTemp,tempStep
+	global setTemp,dhtCheckZone,dhtCheckIr,dhtCheckRele
 	with thermostatLock:
-		setControlState( control, control.state ) 	# make sure we change the background colour!
+		# Azzeriamo tutto cosi poi il check Rimette a Posto Tutto#
+		##########################################################
 		
-				
+		Clock.unschedule( dhtZoneTimer )
+		Clock.unschedule( dhtReleTimer )
+		Clock.unschedule( dhtIrTimer )
+		Clock.schedule_once( clear_dht, 1 )
+		dhtCheckIr=0
+		dhtCheckZone=0
+		dhtCheckRele=0
+		###########################################################
+		statusLabel.text = "\n  Aggiorno \n  Stato \n  Sistema  ......"
+		altStatusLabel.text ="\n  Aggiorno \n  Stato \n  Sistema  ......"
+		setControlState( control, control.state ) 	# make sure we change the background colour!
 		if control is holdControl :
 			if control.state == "down" and heatControl.state == "normal" and coolControl.state == "normal":
-				
 				setControlState(holdControl, "normal")
-			reloadSchedule()	
+				reloadSchedule()
+			else:
+				reloadSchedule()
+				
 		elif control is coolControl:	
-			dhtSend("clear")
 			if dhtIr_number > 0:
 				if control.state == "down":
 					setControlState( heatControl, "normal" )
-									
-					reloadSchedule()
-					
+					setControlState( holdControl, "normal")
 				else:
 					setControlState( coolControl, "normal")
 					setControlState( holdControl, "normal")
 			else:
 				setControlState( coolControl, "normal")
+				setControlState (holdControl,"normal")
 				
 		elif control is heatControl:
-			dhtSend("clear")
 			if control.state == "down":
 				setControlState( coolControl, "normal" )
-				reloadSchedule()
-					
+				setControlState( holdControl, "normal")	
 			setControlState (holdControl,"normal")		
-
+			
 # Check the current sensor temperature
 
 def check_sensor_temp( dt ):
@@ -1137,7 +1285,7 @@ def check_sensor_temp( dt ):
 
 def update_set_temp( control ):
 	with thermostatLock:
-		global setTemp
+		global setTemp,tempStep
 		priorTemp = setTemp
 		if control is plusControl:
 			setTemp = priorTemp + tempStep
@@ -1149,9 +1297,9 @@ def update_set_temp( control ):
 		setLabel.text = "[b]" + str( round(setTemp,1) )  + "[/b]"
 		
 		if heatControl.state == "down":
-				dhtZoneSend(setTemp)
+				Clock.schedule_once( dhtZoneSend, 1 )
 		if coolControl.state == "down":
-				dhtIRSend()
+				Clock.schedule_once( dhtIRSend, 1 )
 		if priorTemp != setTemp:
 			log( LOG_LEVEL_STATE,"Set Temperature", MSG_SUBTYPE_TEMPERATURE, str( setTemp ) )
 
@@ -1215,24 +1363,22 @@ def save_graph(dt):
 		
 #premendo set label change dht enabled
 
-def dht_change(test,data):
+def dht_change(comando):
 	global dhtEnabled,dhtSchedule
 	global setTemp
-	x_pos=data.pos[0]
-	y_pos=data.pos[1]	
-	if (x_pos>=662 and x_pos<=758 and y_pos>=122 and  y_pos <= 163):
-		if heatControl.state == "down":			
-			setLabel.color=(1,0.1,0.1,1)		
-			if dhtEnabled == 0 and settings.get("dhtext" )[ "dhtEnabled" ] == 1 :
-				dhtEnabled = 1			
-				Clock.schedule_once(dht_load,3)	
-				#print "dht Enabled"
-			else:
-				dhtEnabled = 0
-				dhtSchedule = 0
-				dht_label.text = ""
-				Clock.unschedule(dht_load)
-				reloadSchedule()
+	if heatControl.state == "down":			
+		setLabel.color=(1,0.1,0.1,1)		
+		if dhtEnabled == 0 and settings.get("dhtext" )[ "dhtEnabled" ] == 1 :
+			dhtEnabled = 1			
+			Clock.schedule_once(dht_load,3)
+			reloadSchedule()
+			#print "dht Enabled"
+		else:
+			dhtEnabled = 0
+			dhtSchedule = 0
+			dht_label.text = ""
+			Clock.unschedule(dht_load)
+			reloadSchedule()
 				#print "dht Disabled"
 	#print "change dht"	,x_pos	,y_pos			
 			
@@ -1241,30 +1387,86 @@ def dht_change(test,data):
 
 def show_minimal_ui( dt ):
 	with thermostatLock:
+	 	global animationTimer
 		screenMgr.current = "minimalUI"
+		if animationTimer != None:
+					Clock.unschedule( animationMinimal )
+		animationTimer = Clock.schedule_once(animationMinimal,5)	
 		log( LOG_LEVEL_DEBUG, CHILD_DEVICE_SCREEN, MSG_SUBTYPE_TEXT, "Minimal" )
-
+		
+def animationMinimal(dt):
+	checkPos=altStatusLabel.pos
+	#print checkPos
+	anim = Animation(pos=(150,150),t='linear',d=30)
+	anim += Animation(pos=(700,360),t='linear',d=30)
+	anim += Animation(pos=(150,360),t='linear',d=30)
+	anim += Animation(pos=(700,150),t='linear',d=30)
+	anim.repeat=True
+	anim.start(altStatusLabel)
+	
 def light_off( dt ):
 	with thermostatLock:
 		GPIO.output( lightPin, GPIO.HIGH )
 		log( LOG_LEVEL_DEBUG, CHILD_DEVICE_SCREEN, MSG_SUBTYPE_TEXT, "Screen Off" )
 		
+def select_meteo(testo):
+	global minUITimer
+	global lightOffTimer
+	if minUITimer != None:
+		Clock.unschedule( show_minimal_ui )	
+	if lightOffTimer != None:
+		Clock.unschedule( light_off )
+	screenMgr.current = "meteoUI"
+	Clock.schedule_once(returnScreen,20 )
+	
 def select_menu(testo):
+	with thermostatLock:
 	#print "select menu: ", testo.text
-	if testo.text == "Meteo":
-		screenMgr.current = "meteoUI"
-		Clock.schedule_once(returnScreen,10 )
-	if testo.text == "Reboot":
-		restart()
-	if testo.text == "Cool":
-		screenMgr.current = "coolUI"
-		Clock.schedule_once(returnScreen,10 )
-	if testo.text == "Zone":
-		screenMgr.current = "zoneUI"
-		Clock.schedule_once(returnScreen,10 )
+		global minUITimer
+		global lightOffTimer
+		if testo.text == "Reboot":
+			#Window.minimize()
+			restart()
+		if testo.text == "Stato":
+			if minUITimer != None:
+					Clock.unschedule( show_minimal_ui )	
+			if lightOffTimer != None:
+				Clock.unschedule( light_off )
+			if coolControl.state == "down":
+				screenMgr.current = "coolUI"
+			else:	
+				if dhtZone_number >0:
+					screenMgr.current = "zoneUI"
+			Clock.schedule_once(returnScreen,20 )
+			
+def open_menu(testo):
+	with thermostatLock:
+		global minUITimer
+		global lightOffTimer
+		if minUITimer != None:
+			Clock.unschedule( show_minimal_ui )	
+		if lightOffTimer != None:
+			Clock.unschedule( light_off )
+		screenMgr.current = "menuUI"
+		Clock.schedule_once(returnScreen,20 )
 			
 def returnScreen(dt):
-	screenMgr.current = "thermostatUI"
+	with thermostatLock:
+		minUITimer = Clock.schedule_once( show_minimal_ui, minUITimeout )
+		lighOffTimer = Clock.schedule_once( light_off, lightOff )
+		screenMgr.current = "thermostatUI"
+	
+def clear_dht(dt):
+	dhtSend("clear")
+	reloadSchedule()
+	
+def clear_dht_init(dt):
+	with thermostatLock:
+		statusLabel.text = "\n  Inizializzo \n  Comunicazioni \n  Sistema  ......"
+		test_dht(1)
+		clear_dht(1)
+# Start checking the temperature
+		Clock.schedule_interval( check_sensor_temp, tempCheckInterval )
 	
 class MinimalScreen( Screen ):
 	def on_touch_down( self, touch ):
@@ -1279,10 +1481,14 @@ class MinimalScreen( Screen ):
 			touch.ungrab( self )
 			with thermostatLock:
 				Clock.unschedule( light_off )
+				Clock.unschedule(animationTimer)
 				if minUITimer != None:
 					Clock.unschedule( show_minimal_ui )	
 				minUITimer = Clock.schedule_once( show_minimal_ui, minUITimeout )
-				lighOffTimer = Clock.schedule_once( light_off, lightOff )
+				lightOffTimer = Clock.schedule_once( light_off, lightOff )
+				Animation.stop_all(altStatusLabel)
+				Animation.cancel_all(altStatusLabel)
+				altStatusLabel.pos = (400 , 300 )
 				GPIO.output( lightPin, GPIO.LOW )
 				self.manager.current = "thermostatUI"
 				log( LOG_LEVEL_DEBUG, CHILD_DEVICE_SCREEN, MSG_SUBTYPE_TEXT, "Full" )
@@ -1303,7 +1509,7 @@ class meteoScreen( Screen ):
 				if minUITimer != None:
 					Clock.unschedule( show_minimal_ui )	
 				minUITimer = Clock.schedule_once( show_minimal_ui, minUITimeout )
-				lighOffTimer = Clock.schedule_once( light_off, lightOff )
+				lightOffTimer = Clock.schedule_once( light_off, lightOff )
 				GPIO.output( lightPin, GPIO.LOW )
 				self.manager.current = "thermostatUI"
 				log( LOG_LEVEL_DEBUG, CHILD_DEVICE_SCREEN, MSG_SUBTYPE_TEXT, "Full" )
@@ -1324,7 +1530,7 @@ class coolScreen( Screen ):
 				if minUITimer != None:
 					Clock.unschedule( show_minimal_ui )	
 				minUITimer = Clock.schedule_once( show_minimal_ui, minUITimeout )
-				lighOffTimer = Clock.schedule_once( light_off, lightOff )
+				lightOffTimer = Clock.schedule_once( light_off, lightOff )
 				GPIO.output( lightPin, GPIO.LOW )
 				self.manager.current = "thermostatUI"
 				log( LOG_LEVEL_DEBUG, CHILD_DEVICE_SCREEN, MSG_SUBTYPE_TEXT, "Full" )
@@ -1345,11 +1551,31 @@ class zoneScreen( Screen ):
 				if minUITimer != None:
 					Clock.unschedule( show_minimal_ui )	
 				minUITimer = Clock.schedule_once( show_minimal_ui, minUITimeout )
-				lighOffTimer = Clock.schedule_once( light_off, lightOff )
+				lightOffTimer = Clock.schedule_once( light_off, lightOff )
 				GPIO.output( lightPin, GPIO.LOW )
 				self.manager.current = "thermostatUI"
 				log( LOG_LEVEL_DEBUG, CHILD_DEVICE_SCREEN, MSG_SUBTYPE_TEXT, "Full" )
 			return True
+class menuScreen( Screen ):
+
+	def on_touch_up( self, touch ):
+		global minUITimer
+		global lightOffTimer
+		x_pos=touch.pos[0]
+		y_pos=touch.pos[1]
+		#print x_pos,y_pos
+		if x_pos <=267 or x_pos >=530:
+			with thermostatLock:
+				Clock.unschedule( light_off )
+				if minUITimer != None:
+					Clock.unschedule( show_minimal_ui )	
+				minUITimer = Clock.schedule_once( show_minimal_ui, minUITimeout )
+				lightOffTimer = Clock.schedule_once( light_off, lightOff )
+				GPIO.output( lightPin, GPIO.LOW )
+				self.manager.current = "thermostatUI"
+				log( LOG_LEVEL_DEBUG, CHILD_DEVICE_SCREEN, MSG_SUBTYPE_TEXT, "Full" )
+		return True
+altStatusLabel
 
 ##############################################################################
 #                                                                            #
@@ -1378,31 +1604,19 @@ class ThermostatApp( App ):
 		holdControl.bind( on_press=control_callback )
 		plusControl.bind( on_press=update_set_temp )
 		minusControl.bind( on_press = update_set_temp )
-		setLabel.bind( on_touch_down=dht_change)
-	# creo il dropdown menu
-   		menu = ["Meteo","Cool","Zone","Reboot"]
-   		dropdown = DropDown()
-   		for index in range(4):
-   			btn = Button(text=menu[index], size_hint_y=None, height=44)
-   			btn.bind(on_release=lambda btn: dropdown.select("Pagine"))
-   			btn.border= (0,0,0,0)
-   			btn.background_normal= "web/images/menu.png"
-   			btn.bind(on_press=select_menu)
-   			if dhtIr_number == 0  and menu[index] == "Cool":
-   				dropdown.add_widget(btn)
-   			elif dhtZone_number == 0 and menu[index] == "Zone":
-   				dropdown.add_widget(btn)
-   			else:
-   				dropdown.add_widget(btn)
-   		mainbutton = Button(text='Pagine', size_hint=(None, None))
-   		mainbutton.border = (0,0,0,0)
-   		mainbutton.background_normal= "web/images/menu.png" 
-   		mainbutton.pos = (320,320)
-   		mainbutton.size= (120,40)
-   		mainbutton.bind(on_release=dropdown.open)
-   		dropdown.bind(on_select=lambda instance, x: setattr(mainbutton, 'text', x))
    		
-
+	#creo un bottone per il cambio dht/Inverno
+		btndht = Button(text="", size_hint=(None, None),font_size='20sp')
+   		btndht.background_color=(0,0,0,0)
+   		btndht.border= (0,0,0,0)
+   		btndht.size= (85,45)
+   		btndht.bind( on_press = dht_change)
+   	#creo un bottone per Visualizzare meteo
+		btnmeteo = Button(text="", size_hint=(None, None),font_size='20sp')
+   		btnmeteo.background_color=(0,0,0,0)
+   		btnmeteo.border= (0,0,0,0)
+   		btnmeteo.size= (200,100)
+   		btnmeteo.bind( on_press = select_meteo)
    	# set sizing and position info
 		
 		wimg.size = ( 800, 480 )
@@ -1428,19 +1642,22 @@ class ThermostatApp( App ):
 		holdControl.pos = ( 40, 60 )
 
 		setLabel.pos = ( 680,130 )
+		btndht.pos = ( 680,130 )
+		umiditaLabel.pos = (350,360)
+		currentLabel.pos = ( 200, 405 )
 		
 
-		currentLabel.pos = ( 200, 405 )
-
-		dateLabel.pos = ( 550, 300 )
-		timeLabel.pos = ( 710,310 )
+		dateLabel.pos = ( 530, 295 )
+		timeLabel.pos = ( 700,305 )
 		
 		
 		weatherImg.pos = ( 440, 380 )
 		weatherSummaryLabel.pos = ( 640, 410 )
 		weatherDetailsLabel.pos = ( 690,320 )
+		btnmeteo.pos = (440,380)
 		
-		versionLabel.pos = ( 550, 10 )
+		
+		versionLabel.pos = ( 240, 0 )
 		d = 60
 		for c in range(0,3):
 			forecastData[c].pos = (d+85,360)
@@ -1463,10 +1680,29 @@ class ThermostatApp( App ):
 		thermostatUI.add_widget( dateLabel )
 		thermostatUI.add_widget( timeLabel )
 		thermostatUI.add_widget( weatherImg )
-		thermostatUI.add_widget( mainbutton)
 		thermostatUI.add_widget( weatherSummaryLabel )
 		thermostatUI.add_widget( weatherDetailsLabel )
 		thermostatUI.add_widget( versionLabel )
+		thermostatUI.add_widget( btndht )
+		thermostatUI.add_widget(btnmeteo)
+		if dhtEnabled:
+			thermostatUI.add_widget(umiditaLabel)
+		menu_init = [" ","Stato","Reboot"]
+   		p = 325
+   		for index in range(3):
+   			if dhtIr_number == 0  and dhtZone_number == 0 and menu_init[index] == "Stato":
+   				btn = Button(text=" ", size_hint=(None, None),font_size='20sp')
+   				log( LOG_LEVEL_DEBUG, CHILD_DEVICE_SCREEN, MSG_SUBTYPE_TEXT, "No Stato" )
+   			else:
+   				btn = Button(text=menu_init[index], size_hint=(None, None),font_size='20sp')
+   			btn.background_color=(0,0,0,0)
+   			btn.border= (0,0,0,0)
+   			btn.size= (85,45)
+   			btn.pos = (p,30)	
+   			thermostatUI.add_widget(btn)
+   			p +=100
+   			btn.bind(on_press=select_menu)
+   			
 		
 		layout = thermostatUI
 
@@ -1483,17 +1719,18 @@ class ThermostatApp( App ):
 		with minUI.canvas.before:
 			Color( 0.0, 0.0, 0.0, 1 )
 			self.rect = Rectangle( size=( 800, 480 ), pos=minUI.pos )
-			altCurLabel.pos = ( 390, 290 )
-			altTimeLabel.pos = ( 335, 380 )
-			altStatusLabel.pos = (360 , 170 )
+			#altCurLabel.pos = ( 390, 290 )
+			#altTimeLabel.pos = ( 335, 380 )
+			altStatusLabel.pos = (400 , 300 )
 				
-		minUI.add_widget( altCurLabel )
-		minUI.add_widget( altTimeLabel )
+		#minUI.add_widget( altCurLabel )
+		#minUI.add_widget( altTimeLabel )
 		minUI.add_widget( altStatusLabel )
 		# se abilitato dhext scrivo i dati in minUI
-		if dhtEnabled:
-			dht_label.pos = ( 400, 40)
-			minUI.add_widget(dht_label)
+		#if dhtEnabled:
+		#	dht_label.pos = ( 400, 40)
+		#	minUI.add_widget(dht_label)
+			
 		minScreen.add_widget( minUI )
 		
 		
@@ -1517,7 +1754,7 @@ class ThermostatApp( App ):
 		screenMgr = ScreenManager( transition=NoTransition())		# FadeTransition seems to have OpenGL bugs in Kivy Dev 1.9.1 and is unstable, so sticking with no transition for now	
 		
 		#creo pagina dedicata ai moduli IR per i Condizionatori
-		if dhtIr_number >0 :
+		if dhtIr_number > 0:
 			coolwScreen     = coolScreen( name = "coolUI" )
 			coolUI        	= FloatLayout(size = (800,480))
 			coolimage = Image( source='web/images/sfondo_cool.png' )
@@ -1541,7 +1778,6 @@ class ThermostatApp( App ):
 					p -=145
 					s = 0
 					d = 30
-			
 			coolwScreen.add_widget(coolUI)
 			screenMgr.add_widget ( coolwScreen )
 		#creo pagina dedicata ai moduli  per le zone
@@ -1549,7 +1785,7 @@ class ThermostatApp( App ):
 			zonewScreen     = zoneScreen( name = "zoneUI" )
 			zoneUI        	= FloatLayout(size = (800,480))
 			zoneimage = Image( source='web/images/sfondo_zone.png' )
-			with coolUI.canvas.before:
+			with zoneUI.canvas.before:
 				Color( 0.0, 0.0, 0.0, 1 )
 				self.rect = Rectangle( size=( 800, 480 ), pos=zoneUI.pos )
 			zoneimage.size = ( 800, 480 )
@@ -1572,7 +1808,7 @@ class ThermostatApp( App ):
 			
 			zonewScreen.add_widget(zoneUI)
 			screenMgr.add_widget ( zonewScreen )
-		# Aggiungo le pagine allo Screen Manager		
+		
 		
 		screenMgr.add_widget ( uiScreen )
 		screenMgr.add_widget ( minScreen )
@@ -1585,25 +1821,18 @@ class ThermostatApp( App ):
 		minUITimer = Clock.schedule_once( show_minimal_ui, minUITimeout )
 		lighOffTimer = Clock.schedule_once( light_off, lightOff )
 		csvSaver = Clock.schedule_once(save_graph, 30)
-		if dhtIr_number >=1:
-			dhtIrTimer = Clock.schedule_once( dhtIrRead, 4 )
-		if dhtZone_number >=1:
-			dhtZoneTimer = Clock.schedule_once( dhtZoneRead, 5 )
-		if dhtRele == 1:
-			dhtReleTimer = Clock.schedule_once( dhtReleRead, 3 )
+		# azzerro tutti i dht se ce ne sono
+		Clock.schedule_once(clear_dht_init,3)
 				
 		if pirEnabled:
 				Clock.schedule_interval( check_pir, pirCheckInterval )
-			
-		# Start checking the temperature
-		Clock.schedule_interval( check_sensor_temp, tempCheckInterval )
 		
 		if dhtEnabled == 1:
-				Clock.schedule_once(dht_load,2)
+				Clock.schedule_once(dht_load,4)
 		# Show the current weather  		
-		Clock.schedule_once( display_current_weather, 3 )
-		# azzerro tutti i dht se ce ne sono
-		dhtSend("clear")
+		Clock.schedule_once( display_current_weather, 4 )
+		
+
 		
 		return layout
 
@@ -1614,6 +1843,8 @@ class ThermostatApp( App ):
 #                                                                            #
 ##############################################################################
 
+
+		
 def startScheduler():
 	log( LOG_LEVEL_INFO, CHILD_DEVICE_SCHEDULER, MSG_SUBTYPE_TEXT, "Started" )
 	while True:
@@ -1633,9 +1864,9 @@ def setScheduledTemp( temp ):
 			setTemp = round( temp, 1 )
 			setLabel.text = "[b]"+str( round(setTemp,1) ) + "[/b]"
 			if heatControl.state == "down":
-				dhtZoneSend()
+				dhtZoneSend(0.5)
 			if coolControl.state == "down":
-				dhtIRSend()
+				dhtIRSend(0.5)
 			log( LOG_LEVEL_STATE, CHILD_DEVICE_SCHEDULER, MSG_SUBTYPE_TEMPERATURE, str( setTemp ) )
 
 
@@ -1726,7 +1957,7 @@ class WebInterface(object):
 			html = html.replace( "@@tempStep@@", str( tempStep ) )
 			html = html.replace( "@@temp_extern@@",str( temp_vis ) )
 		
-			status = statusLabel.text.replace( "[b]", "<b>" ).replace( "[/b]", "</b>" ).replace("[/color]","</font>").replace("[color=ff3333]","<font color=\"red\">").replace("[i]","<i>").replace("[/i]","</i>").replace( "\n", "<br>" )
+			status = statusLabel.text.replace( "[b]", "<b>" ).replace( "[/b]", "</b>" ).replace("[/color]","</font>").replace("[color=ff3333]","<font color=\"#ff3333\">").replace("[i]","<i>").replace("[/i]","</i>").replace( "\n", "<br>" ).replace("[color=#5F81F1]","<font color=\"#5F81F1\">")
 			status = status.replace( "[color=00ff00]", '<font color="red">' ).replace( "[/color]", '</font>' ) 
 	
 			html = html.replace( "@@status@@", status )
@@ -1737,7 +1968,12 @@ class WebInterface(object):
 			html = html.replace ("@@dhtIrsubmit@@", "style='display:none'" if dhtIr_number == 0 else "")
 			html = html.replace ("@@dhtZonesubmit@@", "style='display:none'" if dhtIr_number == 0 else "")
 			html = html.replace ("@@dhtsubmit@@", "style='display:none'"if dhtEnabled == 0 else "")
-			
+			if dhtZone_number == 0:
+				html = html.replace( "@@displayzone@@", "display:none")
+			if dhtIr_number == 0:
+				html = html.replace( "@@displayir@@", "display:none")
+			if dhtEnabled == 0:
+				html = html.replace( "@@displaydht@@", "display:none")
 
 		return html
 
@@ -1864,7 +2100,7 @@ class WebInterface(object):
 			
 			html = html.replace( "@@version@@", str( THERMOSTAT_VERSION ) )
 			html = html.replace( "@@dt@@", dateLabel.text.replace( "[b]", "<b>" ).replace( "[/b]", "</b>" ) + ", " + timeLabel.text.replace( "[b]", "<b>" ).replace( "[/b]", "</b>" ) )
-			status = statusLabel.text.replace( "[b]", "<b>" ).replace( "[/b]", "</b>" ).replace("[/color]","</font>").replace("[color=ff3333]","<font color=\"red\">").replace("[i]","<i>").replace("[/i]","</i>").replace( "\n", "<br>" )
+			status = statusLabel.text.replace( "[b]", "<b>" ).replace( "[/b]", "</b>" ).replace("[/color]","</font>").replace("[color=ff3333]","<font color=\"#ff3333\">").replace("[i]","<i>").replace("[/i]","</i>").replace( "\n", "<br>" ).replace("[color=#5F81F1]","<font color=\"#5F81F1\">")
 			status = status.replace( "[color=00ff00]", '<font color="red">' ).replace( "[/color]", '</font>' ) 
 	
 			html = html.replace( "@@status@@", status )
@@ -1894,8 +2130,8 @@ class WebInterface(object):
 			
 			html = html.replace( "@@version@@", str( THERMOSTAT_VERSION ) )
 			html = html.replace( "@@dt@@", dateLabel.text.replace( "[b]", "<b>" ).replace( "[/b]", "</b>" ) + ", " + timeLabel.text.replace( "[b]", "<b>" ).replace( "[/b]", "</b>" ) )
-			status = statusLabel.text.replace( "[b]", "<b>" ).replace( "[/b]", "</b>" ).replace("[/color]","</font>").replace("[color=ff3333]","<font color=\"red\">").replace("[i]","<i>").replace("[/i]","</i>").replace( "\n", "<br>" )
-			status = status.replace( "[color=00ff00]", '<font color="red">' ).replace( "[/color]", '</font>' ) 
+			status = statusLabel.text.replace( "[b]", "<b>" ).replace( "[/b]", "</b>" ).replace("[/color]","</font>").replace("[color=ff3333]","<font color=\"#ff3333\">").replace("[i]","<i>").replace("[/i]","</i>").replace( "\n", "<br>" ).replace("[color=#5F81F1]","<font color=\"#5F81F1\">")
+			status = status.replace( "[color=00ff00]", '<font color="red">' ).replace( "[/color]", '</font>' )  
 	
 			html = html.replace( "@@status@@", status )
 			for c in range (0 , 9):
@@ -2029,7 +2265,8 @@ def main():
 	schedThread = threading.Thread( target=startScheduler )
 	schedThread.daemon = True
 	schedThread.start()
-
+	
+		
 	# Start Thermostat UI/App
 	ThermostatApp().run()
 
@@ -2040,7 +2277,7 @@ if __name__ == '__main__':
 	finally:
 		log( LOG_LEVEL_STATE, CHILD_DEVICE_NODE, MSG_SUBTYPE_CUSTOM + "/shutdown", "Thermostat Shutting Down..." )
 		GPIO.cleanup()
-
+		dhtSend("clear")
 		if logFile is not None:
 			logFile.flush()
 			os.fsync( logFile.fileno() )

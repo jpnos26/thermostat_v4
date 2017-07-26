@@ -7,15 +7,15 @@
     },
     "logging": {
         "channel": "file",
-        "level": "error"
+        "level": "info"
     },
 	"dhtout": {
-		"dhtoutEnabled":1,
+		"dhtoutEnabled":0,
 		"dhtoutIP":"192.168.1.123"
 	},
     "dhtext": {
     	"dhtClientIP": "192.168.1.123",
-    	"dhtEnabled": 1,
+    	"dhtEnabled": 0,
 		"dhtTimeout" : 20,
 		"dhtCorrect" : 0
     },
@@ -36,7 +36,7 @@
         "maxTemp": 30.0,
         "minTemp": 15.0,
         "minUIEnabled": 1,
-        "minUITimeout": 30,
+        "minUITimeout": 10,
         "tempCheckInterval": 5,
         "tempHysteresis": 0.3,
         "tempStep": 0.5,
@@ -48,7 +48,7 @@
 	"openDoor":300
     },
     "weather": {
-        "appkey": "key for darksky",
+        "appkey": "darksky code",
         "forecastRefreshInterval": 60,
         "location": "44.110921, 9.963725",
         "weatherExceptionInterval": 5,
@@ -60,14 +60,14 @@
         "port": 80
     },
     "dht_zone":{
-    	"number":2,
+    	"number":0,
     	"zone_interval" : 30,
     	"zone_name_1" : "camera 1",
     	"zone_ip_1": "192.168.1.123",
     	"zone_name_2" : "sala 1",
     	"zone_ip_2": "192.168.1.123",
     	"zone_name_3" : "camera 2",
-    	"zone_ip_3": "192.168.1.123",
+    	"zone_ip_3": "192.168.1.124",
     	"zone_name_4" : "sala 2",
     	"zone_ip_4": "192.168.1.123",
     	"zone_name_5" : "camera 3",
@@ -82,14 +82,14 @@
     	"zone_ip_9": "192.168.1.123"
     },
     "dht_ir":{
-    	"number": 1,
+    	"number": 0,
     	"zoneir_interval" : 30,
     	"zoneir_name_1" : "zona salotto",
     	"zoneir_ip_1": "192.168.1.123",
     	"zoneir_name_2" : "zona camera",
     	"zoneir_ip_2": "192.168.1.123",
     	"zoneir_name_3" : "zona sala",
-    	"zoneir_ip_3": "192.168.1.123",
+    	"zoneir_ip_3": "192.168.1.124",
     	"zoneir_name_4" : "zona camera bimbo",
     	"zoneir_ip_4": "192.168.1.123",
     	"zoneir_name_5" : "zona salotto3",
@@ -105,7 +105,7 @@
     },
     "dht_rele":{
     	"rele_enabled": 0,
-    	"rele_ip": "192.168.1.111",
+    	"rele_ip": "192.168.1.123",
     	"rele_timeout": 20
     	}	
     	

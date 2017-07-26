@@ -1,0 +1,113 @@
+{
+    "calibration": {					// Calibrazione Sensore di Temperatua
+    	"boilingMeasured": 99.998043,			//Temperatura di ebollizione
+    	"elevation": 50,				//altezza zona
+    	"freezingMeasured": 0.0,			//Temperatura di congelamento
+		"correctSensor":-0.5			//Correzione assoluta sensore di temperatura
+    },
+    "logging": {					//Gestione log
+        "channel": "file",
+        "level": "error"
+    },
+	"dhtout": {					// dhT_Logger Temperatura Esterna
+		"dhtoutEnabled":1,			// 0 = disbilita / 1 = abilita
+		"dhtoutIP":"192.168.1.123"
+	},
+    "dhtext": {						// dht_Logger Temperatura Stanza piu Fredda	
+    	"dhtClientIP": "192.168.1.123",
+    	"dhtEnabled": 1,				// 0 = disbilita / 1 = abilita
+	"dhtTimeout" : 20,				// Tempo ogni quanto viene letto
+	"dhtCorrect" : 0				//Correzione assoluta sensore di temperatura
+    },
+    "pir": {						//Sensore PIR accensione schermo
+        "pirCheckInterval": 0.5,
+        "pirEnabled": 0,				// 0 = disbilita / 1 = abilita
+        "pirIgnoreFrom": "00:00",			// ignora sensore dalle ore
+        "pirIgnoreTo": "00:00",				// ignora sensore alle ore
+        "pirPin": 5
+    },
+    "scale": {
+        "tempScale": "metric"
+    },
+    "thermostat": {					//Configurazione Termostato
+        "lightPin": 24,					// Pin spegnimento Schermo
+        "heatPin": 27,					//Pin rele caldaia
+        "coolPin": 18,					//Pin rele condizionatore
+        "maxTemp": 30.0,				//Massima Temperatura
+        "minTemp": 15.0,				//Minima Temperatura
+        "minUIEnabled": 1,				//Abilita schermata StandBye
+        "minUITimeout": 30,				//StandBye dopo sec.
+        "tempCheckInterval": 5,				//Secondi di lettura Sensore Temperatura
+        "tempHysteresis": 0.3,				//Isteresi per accensione/spegnimento
+        "tempStep": 0.5,				//Step di Temperatura
+	"tempice": 16,					//Temp Ghiaccio se tutto Spento
+	"lightOff": 40,					//Spegnimento completo Schermo
+	"user" : "a",					//*****Non Usato*****
+	"pass" : "a",					//*****Non Usato*****
+	"saveCsv": 300,					//Salvataggio in graph(sec)
+	"openDoor":300					//Tempo di attesa per Open Door(sec)
+    },
+    "weather": {
+        "appkey": "112bea22ef3081eed10d82faffcc46c2",	//Chiave dati Meteo
+        "forecastRefreshInterval": 60,			//Tempo di refresh dati meteo forecast  (minuti)
+        "location": "44.110921, 9.963725",		//Luogo dati meteo ( si ricava da google map per la propria posizione)
+        "weatherExceptionInterval": 5,			//Nel caso di dati meteo non letti viene riletto (minuti)
+        "weatherRefreshInterval": 60,			//Tempo di refresh dati meteo  (minuti)
+        "URLtimeout": 5					//Tempo timeout web
+    },
+    "web": {
+        "host": "discover",
+        "port": 80
+    },
+    "dht_zone":{					//dht_Logger in vesrione controllo valvola di zona
+    	"number":2,					//numero di zone
+    	"zone_interval" : 30,				//tempo di lettura condizioni di zona(sec)
+    	"zone_name_1" : "camera 1",			//Nome Zona
+    	"zone_ip_1": "192.168.1.123",			//Ip zona
+    	"zone_name_2" : "sala 1",
+    	"zone_ip_2": "192.168.1.123",
+    	"zone_name_3" : "camera 2",
+    	"zone_ip_3": "192.168.1.123",
+    	"zone_name_4" : "sala 2",
+    	"zone_ip_4": "192.168.1.123",
+    	"zone_name_5" : "camera 3",
+    	"zone_ip_5": "192.168.1.123",
+    	"zone_name_6" : "sala 3",
+    	"zone_ip_6": "192.168.1.123",
+    	"zone_name_7" : "camera 4",
+    	"zone_ip_7": "192.168.1.123",
+    	"zone_name_8" : "sala 4",
+    	"zone_ip_8": "192.168.1.123",
+    	"zone_name_9" : "camera 5",
+    	"zone_ip_9": "192.168.1.123"
+    },
+    "dht_ir":{						//dht_logger in versione IR per comando IR
+    	"number": 1,					//Numero di ir per Condizionatori
+    	"zoneir_interval" : 30,				//tempo di lettura condizioni di IR(sec)
+    	"zoneir_name_1" : "zona salotto",		//Nome Zona
+    	"zoneir_ip_1": "192.168.1.123",			//Ip zona
+    	"zoneir_name_2" : "zona camera",
+    	"zoneir_ip_2": "192.168.1.123",
+    	"zoneir_name_3" : "zona sala",
+    	"zoneir_ip_3": "192.168.1.123",
+    	"zoneir_name_4" : "zona camera bimbo",
+    	"zoneir_ip_4": "192.168.1.123",
+    	"zoneir_name_5" : "zona salotto3",
+    	"zoneir_ip_5": "192.168.1.111",
+    	"zoneir_name_6" : "zona camera3",
+    	"zoneir_ip_6": "192.168.1.111",
+    	"zoneir_name_7" : "zona camera bimbo2",
+    	"zoneir_ip_7": "192.168.1.111",
+    	"zoneir_name_8" : "zona salotto4",
+    	"zoneir_ip_8": "192.168.1.111",
+    	"zoneir_name_9" : "zona camera4",
+    	"zoneir_ip_9": "192.168.1.111"
+    },
+    "dht_rele":{
+    	"rele_enabled": 0,
+    	"rele_ip": "192.168.1.111",
+    	"rele_timeout": 20
+    	}	
+    	
+    	
+}

@@ -1,6 +1,6 @@
-// By jpnos
-// 
-// 
+// By Andrzej Jan Taramina
+// www.chaeron.com
+// andrzej@chaeron.com
 //
 
 // Constructor for ScheduleEntry objects to hold data for all drawn objects.
@@ -20,17 +20,17 @@ function ScheduleEntry( hhmm, temp, ss ) {
 ScheduleEntry.prototype.draw = function( ctx, selected ) {
   if( selected ) {
   	  ctx.drawImage(  this.ss.sel, this.x, this.y  );
-      ctx.font = 'bold 8pt Arial';
+      ctx.font = 'bold 10pt Arial';
 	  ctx.fillStyle = "red";
   } else {
 	  ctx.fillStyle = "black";
-	  ctx.font = '8pt Arial';
+	  ctx.font = '10pt Arial';
 	  ctx.drawImage(  this.ss.img, this.x, this.y  );
   }
 
   ctx.textAlign = "center";
-  ctx.fillText( this.hhmm, this.x + this.ss.imgw / 2, this.y - 15 );
-  ctx.fillText( this.temp.toFixed( 1 ), this.x + this.ss.imgw / 2, this.y - 2 );
+  ctx.fillText( this.hhmm, this.x + this.ss.imgw / 2, this.y - 20 );
+  ctx.fillText( this.temp.toFixed( 1 ), this.x + this.ss.imgw / 2, this.y - 5 );
 
 }
 
@@ -84,7 +84,7 @@ ScheduleEntry.prototype.hhmmFromX = function( x ) {
   var minutes    = increments * this.ss.increment;
 
   var hh		 = Math.floor( minutes / 60 );
-  var mm        	 = minutes % 60
+  var mm         = minutes % 60
 
   var hhmm		 = ( "00" + hh ).substr( -2 ) + ":" + ( "00" + mm ).substr( -2 )
 
@@ -92,7 +92,7 @@ ScheduleEntry.prototype.hhmmFromX = function( x ) {
 }
 
 
-function ScheduleSlider( schedule, day, canvas, imgref, selref, otherSS ) {
+function ScheduleSlider( schedule, day, canvas, imgref, selref, otherSS ,giorno) {
   // **** First some setup! ****
   
   this.canvas 	= canvas;
@@ -103,7 +103,7 @@ function ScheduleSlider( schedule, day, canvas, imgref, selref, otherSS ) {
 
   this.schedule = schedule;
   this.day      = day;
-
+  this.oggi		= giorno;
   this.otherSS 	= otherSS;
   
   this.img 		= document.getElementById( imgref );
@@ -115,7 +115,7 @@ function ScheduleSlider( schedule, day, canvas, imgref, selref, otherSS ) {
   this.maxX 	= this.width - this.margin.right - this.imgw / 2 - 1;
   this.lenX 	= this.width - this.margin.left - this.margin.right;
 
-  this.imgY 	= 33;
+  this.imgY 	= 45;
 
   this.increment = 10; 	// minutes
 
@@ -312,13 +312,13 @@ ScheduleSlider.prototype.draw = function(  ) {
 
 ScheduleSlider.prototype.drawDecorators = function( ctx ) {
 	// Draw Day Label
-	ctx.font = 'bold 10pt Arial';
+	ctx.font = 'bold 12pt Arial';
 	ctx.fillStyle = "black";
 	ctx.textAlign = "left";
-    ctx.fillText( this.day, 5, 15 );
+    ctx.fillText( this.oggi, 5, 15 );
 
 	// Draw x-axis
-	ctx.strokeStyle = '#777777';
+	ctx.strokeStyle = '#FF7777';
 	ctx.beginPath();
     ctx.moveTo( this.margin.left, this.imgY + 25 );
     ctx.lineTo( this.margin.left + this.lenX, this.imgY + 25 );
@@ -328,8 +328,8 @@ ScheduleSlider.prototype.drawDecorators = function( ctx ) {
     // Draw x-axis labels and ticks
     var xInc =  this.lenX / 24;
     var xPos = this.margin.left;
-	ctx.font = '8pt Arial';
-	ctx.fillStyle = '#777777';
+	ctx.font = '10pt Arial';
+	ctx.fillStyle = '#FF7777';
 	ctx.textAlign = "center";
 	for( hh = 0; hh < 24; hh++ ) {
 		txt = ( "00" + hh ).substr( -2 );

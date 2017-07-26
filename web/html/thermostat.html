@@ -170,7 +170,7 @@
 	}
 	input[type="submit"]:hover{background-color: #ff0000; color:#ffffff}
 	input[type="submit"] {
-		height:75px;
+		height:70px;
 		width:40px;
 		color:#FF0000;
 		font-size:18px;
@@ -231,7 +231,7 @@
 
   </style>
 </head>
-<body >
+<body bgcolor = "#d0d0f0">
 	<div align="center">
 		<form method="post" action="set">
 		  	<table width="550px" rules="none" cellpadding="10" cellspacing="0" >
@@ -252,9 +252,9 @@
         					<li class="current-item"><a href="#">Home</a></li>
         					<li><a href="/schedule">Schedule</a></li>
         					<li><a href="/graph">Grafico</a></li>
-        					<li><a href="/redirect/99" @@dhtsubmit@@ >Dht</a></li>
-        					<li><a href="irdht" @@dhtIrsubmit@@ >Dht Ir</a></li>
-        					<li><a href="zonedht" @@dhtZonesubmit@@ >Dht Zone</a></li>
+        					<li style="@@displaydht@@"><a href="/redirect/99" @@dhtsubmit@@ >Dht</a></li>
+        					<li style="@@displayir@@"><a href="irdht" @@dhtIrsubmit@@ >Dht Ir</a></li>
+        					<li style="@@displayzone@@"><a href="zonedht" @@dhtZonesubmit@@ >Dht Zone</a></li>
     					</ul>    				
 					</nav>
 			</table>
@@ -298,7 +298,7 @@
 					<label for="holdButton" related="holdButton" class="green">Manuale</label>
 					<input type="checkbox"  id="holdButton" related="holdButton" name="hold" value="on"  />
 				</td>
-				<td  valign="center" width="13%" style="vertical-align:middle;">
+				<td  valign="center" width="13%" style="vertical-align:top;">
 					<input id="set"  type="submit" value="Set" >
 							
 				</tr>
