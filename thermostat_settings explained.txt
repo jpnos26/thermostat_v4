@@ -35,6 +35,8 @@
         "coolPin": 18,					//Pin rele condizionatore
         "maxTemp": 30.0,				//Massima Temperatura
         "minTemp": 15.0,				//Minima Temperatura
+	"sensTemp": 1,                                  //Tipo Sensore 0=ds18b20    1=dht22
+        "sensPin":  6,                                  // Se usato dht22 e il pin di collegamento
         "minUIEnabled": 1,				//Abilita schermata StandBye
         "minUITimeout": 30,				//StandBye dopo sec.
         "tempCheckInterval": 5,				//Secondi di lettura Sensore Temperatura
@@ -42,13 +44,13 @@
         "tempStep": 0.5,				//Step di Temperatura
 	"tempice": 16,					//Temp Ghiaccio se tutto Spento
 	"lightOff": 40,					//Spegnimento completo Schermo
-	"user" : "a",					//*****Non Usato*****
-	"pass" : "a",					//*****Non Usato*****
+	"user" : "a",					//Abilitare web auth
+	"pass" : "a",					//Abilitare web auth
 	"saveCsv": 300,					//Salvataggio in graph(sec)
 	"openDoor":300					//Tempo di attesa per Open Door(sec)
     },
     "weather": {
-        "appkey": "112bea22ef3081eed10d82faffcc46c2",	//Chiave dati Meteo
+        "appkey": "Key meteo ",	                        //Chiave dati Meteo
         "forecastRefreshInterval": 60,			//Tempo di refresh dati meteo forecast  (minuti)
         "location": "44.110921, 9.963725",		//Luogo dati meteo ( si ricava da google map per la propria posizione)
         "weatherExceptionInterval": 5,			//Nel caso di dati meteo non letti viene riletto (minuti)
@@ -56,8 +58,11 @@
         "URLtimeout": 5					//Tempo timeout web
     },
     "web": {
-        "host": "discover",
-        "port": 80
+        "host": "discover",                             // Nome Host
+        "port": 443,                                    // porta puo essere 80 o altro per http , 443 per accesso https
+        "key" :"/etc/ssl/cherrypy/cherrypy.key",        // percorso chiave openssl
+        "cert":"/etc/ssl/cherrypy/cherrypy.crt",        // percorso crt openssl
+        "auth": 1                                       // Abilita accesso con autenticazione
     },
     "dht_zone":{					//dht_Logger in vesrione controllo valvola di zona
     	"number":2,					//numero di zone
@@ -107,6 +112,10 @@
     	"rele_enabled": 0,
     	"rele_ip": "192.168.1.111",
     	"rele_timeout": 20
+    	},
+    "telegram":{                    
+    	"enabled":1,                                               // abilita bot Telegram
+    	"token":"token telegram"                                   // Inserire token fornito da botFather
     	}	
     	
     	

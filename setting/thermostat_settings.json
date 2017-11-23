@@ -1,13 +1,13 @@
 {
     "calibration": {
     	"boilingMeasured": 99.998043,
-    	"elevation": 50,
+    	"elevation": 500,
     	"freezingMeasured": 0.0,
-		"correctSensor":-0.5
+		"correctSensor":-0.9
     },
     "logging": {
         "channel": "file",
-        "level": "info"
+        "level": "error"
     },
 	"dhtout": {
 		"dhtoutEnabled":0,
@@ -30,34 +30,39 @@
         "tempScale": "metric"
     },
     "thermostat": {
-        "lightPin": 24,
-        "heatPin": 27,
-        "coolPin": 18,
-        "maxTemp": 30.0,
+        "lightPin": 13,
+        "heatPin": 19,
+        "coolPin": 26,
+        "maxTemp": 25.0,
+        "sensTemp": 1,
+        "sensPin":	6,
         "minTemp": 15.0,
         "minUIEnabled": 1,
-        "minUITimeout": 10,
+        "minUITimeout": 30,
         "tempCheckInterval": 5,
-        "tempHysteresis": 0.3,
-        "tempStep": 0.5,
-	"tempice": 16,
-	"lightOff": 40,
-	"user" : "a",
-	"pass" : "a",
-	"saveCsv": 300,
-	"openDoor":300
+        "tempHysteresis": 0.2,
+        "tempStep": 0.1,
+		"tempice": 16,
+		"lightOff": 40,
+		"user" : "a",
+		"pass" : "a",
+		"saveCsv": 300,
+		"openDoor":300
     },
     "weather": {
-        "appkey": "darksky code",
+        "appkey": "weather key",
         "forecastRefreshInterval": 60,
-        "location": "44.110921, 9.963725",
+        "location": "44.111367, 9.963093",
         "weatherExceptionInterval": 5,
         "weatherRefreshInterval": 60,
         "URLtimeout": 5
     },
     "web": {
         "host": "discover",
-        "port": 80
+        "port": 443,
+        "key" :"/etc/ssl/cherrypy/cherrypy.key",
+        "cert":"/etc/ssl/cherrypy/cherrypy.crt",
+        "auth": 1
     },
     "dht_zone":{
     	"number":0,
@@ -107,7 +112,9 @@
     	"rele_enabled": 0,
     	"rele_ip": "192.168.1.123",
     	"rele_timeout": 20
-    	}	
-    	
-    	
+    	},
+    "telegram":{
+    	"enabled":1,
+    	"token":"token telegram"
+    	}	   	
 }

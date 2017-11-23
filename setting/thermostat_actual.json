@@ -1,1 +1,1 @@
-{"state": {"dhtEnabled": 1, "holdControl": "normal", "setTemp": 24.0, "heatControl": "normal", "coolControl": "down"}}
+{"state": {"dhtEnabled": 0, "holdControl": "normal", "setTemp": 23.0, "heatControl": "down", "coolControl": "normal"}}
