@@ -52,7 +52,7 @@
     "weather": {
         "appkey": "weather key",
         "forecastRefreshInterval": 60,
-        "location": "44.111367, 9.963093",
+        "location": "47.111367, 9.963093",
         "weatherExceptionInterval": 5,
         "weatherRefreshInterval": 60,
         "URLtimeout": 5
