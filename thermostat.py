@@ -1465,11 +1465,11 @@ def load_temp():
         correctedTemp = 20
         if dhtEnabled == 1 and dhtTemp <> 0:
             rawTemp = dhtTemp
-            correctedTemp = (((
-                              rawTemp - freezingMeasured) * referenceRange) / measuredRange) + freezingPoint + dhtCorrect
+            print rawTemp
+            correctedTemp = (((rawTemp - freezingMeasured) * referenceRange) / measuredRange) + freezingPoint + dhtCorrect
             log(LOG_LEVEL_DEBUG, CHILD_DEVICE_TEMP, MSG_SUBTYPE_CUSTOM + "/dhtTemp", str(rawTemp))
             log(LOG_LEVEL_DEBUG, CHILD_DEVICE_TEMP, MSG_SUBTYPE_CUSTOM + "/corrected", str(correctedTemp))
-
+            print rawTemp,correctedTemp
         else:
             if tempSensor is not None:
                 print ("check temp")
@@ -1486,13 +1486,11 @@ def load_temp():
                                       rawTemp - freezingMeasured) * referenceRange) / measuredRange) + freezingPoint + correctSensor
                     log(LOG_LEVEL_DEBUG, CHILD_DEVICE_TEMP, MSG_SUBTYPE_CUSTOM + "/raw", str(rawTemp))
                     log(LOG_LEVEL_DEBUG, CHILD_DEVICE_TEMP, MSG_SUBTYPE_CUSTOM + "/corrected", str(correctedTemp))
-            if abs(priorCorrected - correctedTemp) >= TEMP_TOLERANCE:
-                if abs(priorCorrected - correctedTemp) >= 1 and openDoor <= openDoorCheck:
-
-                    openDoor += 1
-                else:
-
-                    openDoor == 0
+        if abs(priorCorrected - correctedTemp) >= TEMP_TOLERANCE:
+            if abs(priorCorrected - correctedTemp) >= 1 and openDoor <= openDoorCheck:
+                openDoor += 1
+            else:
+                openDoor == 0
                 log(LOG_LEVEL_STATE, CHILD_DEVICE_TEMP, MSG_SUBTYPE_TEMPERATURE, str(currentTemp))
                 priorCorrected = correctedTemp
                 currentTemp = round(correctedTemp, 1)
@@ -2718,7 +2716,6 @@ if __name__ == '__main__':
         log(LOG_LEVEL_STATE, CHILD_DEVICE_NODE, MSG_SUBTYPE_CUSTOM + "/shutdown", "Thermostat Shutting Down...")
         GPIO.cleanup()
         dhtSend("clear")
-        telegramSend("Thermost is shutting down....")
         if logFile is not None:
             logFile.flush()
             os.fsync(logFile.fileno())
