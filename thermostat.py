@@ -266,9 +266,7 @@ def log_file(level, child_device, msg_subtype, msg, msg_type=MSG_TYPE_SET, times
 
 
 def log_print(level, child_device, msg_subtype, msg, msg_type=MSG_TYPE_SET, timestamp=True, single=False):
-    if level >= logLevel:
-        ts = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S%z ") if LOG_ALWAYS_TIMESTAMP or timestamp else ""
-        print(ts + LOG_LEVELS_STR[level] + "/" + child_device + "/" + msg_type + "/" + msg_subtype + ": " + msg)
+    if level >= logLevel:ts = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S%z ") if LOG_ALWAYS_TIMESTAMP or timestamp else ""print(ts + LOG_LEVELS_STR[level] + "/" + child_device + "/" + msg_type + "/" + msg_subtype + ": " + msg)
 
 
 loggingChannel = "none" if not (settings.exists("logging")) else settings.get("logging")["channel"]
@@ -1465,25 +1463,23 @@ def load_temp():
         correctedTemp = 20
         if dhtEnabled == 1 and dhtTemp <> 0:
             rawTemp = dhtTemp
-            print rawTemp
+            #print rawTemp
             correctedTemp = (((rawTemp - freezingMeasured) * referenceRange) / measuredRange) + freezingPoint + dhtCorrect
             log(LOG_LEVEL_DEBUG, CHILD_DEVICE_TEMP, MSG_SUBTYPE_CUSTOM + "/dhtTemp", str(rawTemp))
             log(LOG_LEVEL_DEBUG, CHILD_DEVICE_TEMP, MSG_SUBTYPE_CUSTOM + "/corrected", str(correctedTemp))
-            print rawTemp,correctedTemp
+            #print rawTemp,correctedTemp
         else:
             if tempSensor is not None:
-                print ("check temp")
+                #print ("check temp")
                 if (typeSensor == 0):
                     rawTemp = tempSensor.get_temperature(sensorUnits)
-                    print ("ds1820 Temp :", rawTemp)
+                    #print ("ds1820 Temp :", rawTemp)
                 else:
                     letHum, letTemp = Adafruit_DHT.read_retry(dht, dhtpin)
-                    print    ("dht Temp: ", letTemp)
+                    #print    ("dht Temp: ", letTemp)
                     if letHum is not None and letTemp is not None:
                         rawTemp = letTemp
-
-                    correctedTemp = (((
-                                      rawTemp - freezingMeasured) * referenceRange) / measuredRange) + freezingPoint + correctSensor
+                    correctedTemp = (((rawTemp - freezingMeasured) * referenceRange) / measuredRange) + freezingPoint + correctSensor
                     log(LOG_LEVEL_DEBUG, CHILD_DEVICE_TEMP, MSG_SUBTYPE_CUSTOM + "/raw", str(rawTemp))
                     log(LOG_LEVEL_DEBUG, CHILD_DEVICE_TEMP, MSG_SUBTYPE_CUSTOM + "/corrected", str(correctedTemp))
         if abs(priorCorrected - correctedTemp) >= TEMP_TOLERANCE:
@@ -2495,7 +2491,7 @@ class WebInterface(object):
     @require()
     def zonedht(self, ipdht=""):
         log(LOG_LEVEL_INFO, CHILD_DEVICE_WEBSERVER, MSG_SUBTYPE_TEXT, "zone.html to: " + cherrypy.request.remote.ip)
-        print "ip DHT: ", ipdht
+        #print "ip DHT: ", ipdht
         file = open("web/html/zone.html", "r")
 
         html = file.read()
