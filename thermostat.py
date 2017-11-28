@@ -266,7 +266,9 @@ def log_file(level, child_device, msg_subtype, msg, msg_type=MSG_TYPE_SET, times
 
 
 def log_print(level, child_device, msg_subtype, msg, msg_type=MSG_TYPE_SET, timestamp=True, single=False):
-    if level >= logLevel:ts = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S%z ") if LOG_ALWAYS_TIMESTAMP or timestamp else ""print(ts + LOG_LEVELS_STR[level] + "/" + child_device + "/" + msg_type + "/" + msg_subtype + ": " + msg)
+    if level >= logLevel:
+        ts = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S%z ") if LOG_ALWAYS_TIMESTAMP or timestamp else ""
+        print(ts + LOG_LEVELS_STR[level] + "/" + child_device + "/" + msg_type + "/" + msg_subtype + ": " + msg)
 
 
 loggingChannel = "none" if not (settings.exists("logging")) else settings.get("logging")["channel"]
@@ -906,7 +908,7 @@ if telegramSend == 1:
             elif command == "/stato":
                 bot.sendMessage(chat_id, test_ip)
             elif command == "/time":
-                bot.sendMessage(chat_id, str(datetime.datetime.now()))
+                bot.sendMessage(chat_id, str(datetime.datetime.now().strftime("%H:%M -- %d/%m/%Y")))
             elif command[:8] == "/setTemp":
                 tempe_set = command[command.index(":")+1:]
                 #print str(tempe_set),str(setTemp)
@@ -1479,9 +1481,9 @@ def load_temp():
                     #print    ("dht Temp: ", letTemp)
                     if letHum is not None and letTemp is not None:
                         rawTemp = letTemp
-                    correctedTemp = (((rawTemp - freezingMeasured) * referenceRange) / measuredRange) + freezingPoint + correctSensor
-                    log(LOG_LEVEL_DEBUG, CHILD_DEVICE_TEMP, MSG_SUBTYPE_CUSTOM + "/raw", str(rawTemp))
-                    log(LOG_LEVEL_DEBUG, CHILD_DEVICE_TEMP, MSG_SUBTYPE_CUSTOM + "/corrected", str(correctedTemp))
+                correctedTemp = (((rawTemp - freezingMeasured) * referenceRange) / measuredRange) + freezingPoint + correctSensor
+                log(LOG_LEVEL_DEBUG, CHILD_DEVICE_TEMP, MSG_SUBTYPE_CUSTOM + "/raw", str(rawTemp))
+                log(LOG_LEVEL_DEBUG, CHILD_DEVICE_TEMP, MSG_SUBTYPE_CUSTOM + "/corrected", str(correctedTemp))
         if abs(priorCorrected - correctedTemp) >= TEMP_TOLERANCE:
             if abs(priorCorrected - correctedTemp) >= 1 and openDoor <= openDoorCheck:
                 openDoor += 1
