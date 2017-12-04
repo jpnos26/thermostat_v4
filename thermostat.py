@@ -893,6 +893,7 @@ def closeTelegram(dt):
     bot.sendMessage(chatIdTest, "Timeout - Bot disabilitato.... Alla Prossima")
     testTimeout = 0
     chatIdTest = 0
+    
 if telegramSend == 1:
     bot = telepot.Bot(settings.get("telegram")["token"])
     with thermostatLock:
@@ -900,8 +901,8 @@ if telegramSend == 1:
             global telegramTimeout, chatIdTest,testTimeout
             chat_id = msg['chat']['id']
             command = msg['text']
-            print 'Got command: %s' % command
-            print chat_id
+            #print 'Got command: %s' % command
+            #print chat_id
             if command == "/"+ settings.get("telegram")["pwd"] and chatIdTest == 0:
                 chatIdTest = chat_id
                 testTimeout = 100
@@ -965,7 +966,6 @@ def telegramCommand(command,chat_id):
         Clock.schedule_once(closeTelegram, 0)
         bot.sendMessage(chat_id, "Bot disabilitato.... Alla Prossima")
 
-#######################################################
 
 ##############################################################################
 #                                                                            #
@@ -1291,7 +1291,7 @@ def get_ip_address():
 def settaTemp(temperature):
     global setTemp
     setTemp = round(temperature, 1)
-    print setTemp,temperature
+    #print setTemp,temperature
     setLabel.text = "[b]" + str(round(setTemp, 1)) + "[/b]"
     
 def getVersion():
