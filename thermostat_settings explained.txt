@@ -48,6 +48,7 @@
 	"pass" : "a",					//Abilitare web auth
 	"saveCsv": 300,					//Salvataggio in graph(sec)
 	"openDoor":300					//Tempo di attesa per Open Door(sec)
+	"checkPin":1                                    // se a 1 fa vedere nella consolle lo stato dei gpio e dei dht
     },
     "weather": {
         "appkey": "Key meteo ",	                        //Chiave dati Meteo
@@ -116,6 +117,8 @@
     "telegram":{                    
     	"enabled":1,                                               // abilita bot Telegram
     	"token":"token telegram"                                   // Inserire token fornito da botFather
+    	"pwd" : "123",                                             // pwd per accesso al bot
+    	"timeout" : 100                                            // timeout dell'accesso al bot
     	}	
     	
     	

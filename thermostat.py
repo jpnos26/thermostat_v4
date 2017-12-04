@@ -32,7 +32,7 @@
 #                                                                            #
 ##############################################################################
 import threading
-import math
+#import math
 import os, os.path, sys
 import time
 import datetime
@@ -92,8 +92,8 @@ import schedule
 try:
     import RPi.GPIO as GPIO
 except ImportError:
-    import FakeRPi.GPIO as GPIO
-
+	import FakeRPi.GPIO as GPIO
+	print ("No RPI used")
 try:
     import Adafruit_DHT
 except ImportError:
@@ -413,6 +413,7 @@ dhtReleIP = "" if not (settings.exists("thermostat")) else settings.get("dht_rel
 dhtIr_number = 0 if not (settings.exists("thermostat")) else settings.get("dht_ir")["number"]
 dhtZone_number = 0 if not (settings.exists("thermostat")) else settings.get("dht_zone")["number"]
 telegramSend = 0 if not (settings.exists("thermostat")) else settings.get("telegram")["enabled"]
+chatIdTest = 0
 dhtCheckIr = 0
 dhtCheckRele = 0
 dhtCheckZone = 0
@@ -422,7 +423,8 @@ dhtCheckIce = 0
 if telegramSend == 1:
     import telepot
     from telepot.loop import MessageLoop
-
+    telegramTimeout = 60 if not (settings.exists("thermostat")) else settings.get("telegram")["timeout"]
+    testTimeout = 0
 if dhtIr_number > 0:
     dhtIRLabel = {}
     dhtIR = {}
@@ -885,64 +887,83 @@ def testDhtLan(c, comando):
 ##########################################################################
 ## Telegram Section
 #########################################################################
-
+def closeTelegram(dt):
+    global telegramTimeout,chatIdTest,testTimeout
+    testTimeout = 0
+    chatIdTest = 0
+    
 if telegramSend == 1:
     bot = telepot.Bot(settings.get("telegram")["token"])
     with thermostatLock:
         def handle(msg):
+            global telegramTimeout, chatIdTest,testTimeout
             chat_id = msg['chat']['id']
             command = msg['text']
-            #print 'Got command: %s' % command
-            if command == "/ip":
-                f = get("https://api.ipify.org").text
-                look_ip = str(f)
-                if cherrypy.server.socket_port == 443:
-                    bot.sendMessage(chat_id, "Da Internet Thermostat su: https://" + look_ip + "/")
-                else:
-                    bot.sendMessage(chat_id, "Da Internet Thermostat su: http://" + look_ip + "/")
-                ip_int = str(get_ip_address())
-                if cherrypy.server.socket_port == 443:
-                    bot.sendMessage(chat_id, "Da Lan Thermostat su: https://" + ip_int + "/")
-                else:
-                    bot.sendMessage(chat_id, "Da Lan Thermostat su: http://" + ip_int + "/")    
-            elif command == "/stato":
-                bot.sendMessage(chat_id, test_ip)
-            elif command == "/time":
-                bot.sendMessage(chat_id, str(datetime.datetime.now().strftime("%H:%M -- %d/%m/%Y")))
-            elif command[:8] == "/setTemp":
-                tempe_set = command[command.index(":")+1:]
-                #print str(tempe_set),str(setTemp)
-                settaTemp(float(tempe_set))
-                change_system_settings()
-                bot.sendMessage(chat_id, "Set Temp : "+str(setTemp))
-                bot.sendMessage(chat_id, test_ip)
-            elif command == "/help":
-                risposta = "/ip : leggi ip Thermostat \n/time : leggi ora Thermostat \n/stato : leggi lo stato di Thermostat \n/setTemp:20.0 : setta Temperatura \n/Inverno : setta Sistema per inverno \n/Estate : setta Sistema per Estate \n/Manuale : prima settare Estate o Inverno quindi setta Il Funzionamento Manuale \n/Off : Setta NoIce \n/help : leggi i comandi possibili"
-                bot.sendMessage(chat_id,risposta)
-            elif command == "/Inverno":
-                setControlState(heatControl, "down")
-                holdControl.state="normal"
-                change_system_settings()
-                bot.sendMessage(chat_id,"Settato Inverno")
-                bot.sendMessage(chat_id, test_ip)
-            elif command == "/Estate":
-                setControlState(coolControl, "down")
-                holdControl.state="normal"
-                change_system_settings()
-                bot.sendMessage(chat_id,"Settato Estate")
-                bot.sendMessage(chat_id, test_ip)
-            elif command == "/Manuale":
-                setControlState(holdControl, "down")
-                change_system_settings()
-                bot.sendMessage(chat_id,"Settato Manuale")
-                bot.sendMessage(chat_id, test_ip)
-            elif command =="/Off":
-                holdControl.state="normal"
-                coolControl.state="normal"
-                setControlState(heatControl, "normal")
-                change_system_settings()
-                bot.sendMessage(chat_id, test_ip)
-            
+            print 'Got command: %s' % command
+            print chat_id
+            if command == "/"+ settings.get("telegram")["pwd"]:
+                chatIdTest = chat_id
+                testTimeout = 100
+                Clock.schedule_once(closeTelegram, telegramTimeout)
+                bot.sendMessage(chat_id, "Pwd OK - Bot Abilitato per id : "+ str(chatIdTest)+" per : "+str(telegramTimeout)+"sec")
+            else:
+                if chatIdTest == chat_id and testTimeout > 0:
+                    telegramCommand(command,chat_id)
+                
+def telegramCommand(command,chat_id):
+    if command == "/ip":
+        f = get("https://api.ipify.org").text
+        look_ip = str(f)
+        if cherrypy.server.socket_port == 443:
+            bot.sendMessage(chat_id, "Da Internet Thermostat su: https://" + look_ip + "/")
+        else:
+            bot.sendMessage(chat_id, "Da Internet Thermostat su: http://" + look_ip + "/")
+        ip_int = str(get_ip_address())
+        if cherrypy.server.socket_port == 443:
+            bot.sendMessage(chat_id, "Da Lan Thermostat su: https://" + ip_int + "/")
+        else:
+            bot.sendMessage(chat_id, "Da Lan Thermostat su: http://" + ip_int + "/")    
+    elif command == "/stato":
+        bot.sendMessage(chat_id, test_ip)
+    elif command == "/time":
+        bot.sendMessage(chat_id, str(datetime.datetime.now().strftime("%H:%M -- %d/%m/%Y")))
+    elif command[:8] == "/settemp":
+        tempe_set = command[command.index(":")+1:]
+        #print str(tempe_set),str(setTemp)
+        settaTemp(float(tempe_set))
+        change_system_settings()
+        bot.sendMessage(chat_id, "Set Temp : "+str(setTemp))
+        bot.sendMessage(chat_id, test_ip)
+    elif command == "/help":
+        risposta = "/ip : leggi ip Thermostat \n/time : leggi ora Thermostat \n/stato : leggi lo stato di Thermostat \n/settemp:20.0 : setta Temperatura \n/inverno : setta Sistema per inverno \n/estate : setta Sistema per Estate \n/manuale : prima settare Estate o Inverno quindi setta Il Funzionamento Manuale \n/off : Setta NoIce \n/close : Chiude Bot in questa Connessione\n/help : leggi i comandi possibili"
+        bot.sendMessage(chat_id,risposta)
+    elif command == "/inverno":
+        setControlState(heatControl, "down")
+        holdControl.state="normal"
+        change_system_settings()
+        bot.sendMessage(chat_id,"Settato Inverno")
+        bot.sendMessage(chat_id, test_ip)
+    elif command == "/estate":
+        setControlState(coolControl, "down")
+        holdControl.state="normal"
+        change_system_settings()
+        bot.sendMessage(chat_id,"Settato Estate")
+        bot.sendMessage(chat_id, test_ip)
+    elif command == "/manuale":
+        setControlState(holdControl, "down")
+        change_system_settings()
+        bot.sendMessage(chat_id,"Settato Manuale")
+        bot.sendMessage(chat_id, test_ip)
+    elif command =="/off":
+        holdControl.state="normal"
+        coolControl.state="normal"
+        setControlState(heatControl, "normal")
+        change_system_settings()
+        bot.sendMessage(chat_id, test_ip)
+    elif command == "/close":
+        Clock.schedule_once(closeTelegram, 0)
+        bot.sendMessage(chat_id, "Bot disabilitato.... Alla Prossima")
+
 #######################################################
 
 ##############################################################################
@@ -1315,7 +1336,6 @@ def change_system_settings():
         global csvSaver, dhtCheckRele, dhtCheckZone, dhtCheckIr, dhtCheckIce
         hpin_start = str(GPIO.input(heatPin))
         cool_start = str(GPIO.input(coolPin))
-        # print "Stato check Dht  - ",dhtCheckIr,dhtCheckZone,dhtCheckRele
         if heatControl.state == "down":
             if dhtCheckZone == 0:
                 Clock.unschedule(dhtIrTimer)
@@ -1354,9 +1374,6 @@ def change_system_settings():
                 dhtCheckZone = 0
                 dhtIRSend(0.5)
                 dhtIrRead(0.5)
-
-
-
         else:
             # modifica per minima temp antigelo
             if dhtCheckZone == 0:
@@ -1397,7 +1414,9 @@ def change_system_settings():
             Clock.unschedule(csvSaver)
             csvSaver = Clock.schedule_once(save_graph, 1)
             log(LOG_LEVEL_STATE, CHILD_DEVICE_HEAT, MSG_SUBTYPE_BINARY_STATUS, "1" if GPIO.input(coolPin) else "0")
-
+        if settings.get("thermostat")["checkPin"] == 1:
+            print "Gpio heat : " ,str(GPIO.input(heatPin))," - Gpio cool : ",str(GPIO.input(coolPin)) , " - pirPin : ",str(GPIO.input(pirPin)), " - Light Pin :",str(GPIO.input(lightPin))
+            print "Stato check Dht  - DhtIR: ",dhtCheckIr," - dhtZone : ",dhtCheckZone," - dhtCheckRele : ",dhtCheckRele 
 
 # This callback will be bound to the touch screen UI buttons:
 
@@ -1427,7 +1446,6 @@ def control_callback(control):
                 
             elif control.state == "down" and coolControl.state == "down":
                 reloadSchedule()
-                sendTelegram("Attivata funzione Estate Manuale")
             elif control.state == "normal":
             
                 reloadSchedule()
@@ -1454,8 +1472,6 @@ def control_callback(control):
 
 def check_sensor_temp(dt):
     load_temp()
-    # check if temp is changed and if opendoor
-    change_system_settings()
 
 
 def load_temp():
@@ -2158,7 +2174,6 @@ def reloadSchedule():
                         "Set " + day + ", at: " + entry[0] + " = " + str(entry[1]) + scaleUnits)
 
 
-coolPin
 ##############################################################################
 #                                                                            #
 #       Web Server Interface                                                 #
