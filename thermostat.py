@@ -901,7 +901,7 @@ if telegramSend == 1:
             command = msg['text']
             print 'Got command: %s' % command
             print chat_id
-            if command == "/"+ settings.get("telegram")["pwd"]:
+            if command == "/"+ settings.get("telegram")["pwd"] and chatIdTest == 0:
                 chatIdTest = chat_id
                 testTimeout = 100
                 Clock.schedule_once(closeTelegram, telegramTimeout)
