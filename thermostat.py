@@ -205,7 +205,7 @@ MSG_SUBTYPE_DHT = "DhtWifi"
 #                                                                            #
 ##############################################################################
 
-THERMOSTAT_VERSION = "4.1.0"
+THERMOSTAT_VERSION = "4.1.1"
 
 # Debug settings
 
@@ -887,11 +887,12 @@ def testDhtLan(c, comando):
 ##########################################################################
 ## Telegram Section
 #########################################################################
+
 def closeTelegram(dt):
     global telegramTimeout,chatIdTest,testTimeout
+    bot.sendMessage(chatIdTest, "Timeout - Bot disabilitato.... Alla Prossima")
     testTimeout = 0
     chatIdTest = 0
-    
 if telegramSend == 1:
     bot = telepot.Bot(settings.get("telegram")["token"])
     with thermostatLock:
