@@ -10,12 +10,12 @@
         "level": "error"
     },
 	"dhtout": {
-		"dhtoutEnabled":0,
+		"dhtoutEnabled":1,
 		"dhtoutIP":"192.168.1.123"
 	},
     "dhtext": {
     	"dhtClientIP": "192.168.1.123",
-    	"dhtEnabled": 0,
+    	"dhtEnabled": 1,
 		"dhtTimeout" : 20,
 		"dhtCorrect" : 0
     },
@@ -42,17 +42,18 @@
         "tempCheckInterval": 5,
         "tempHysteresis": 0.2,
         "tempStep": 0.1,
-		"tempice": 16,
-		"lightOff": 40,
-		"user" : "a",
-		"pass" : "a",
-		"saveCsv": 300,
-		"openDoor":300
+	"tempice": 16,
+	"lightOff": 40,
+	"user" : "a",
+	"pass" : "a",
+	"saveCsv": 300,
+	"openDoor":300,
+	"checkPin":1
     },
     "weather": {
-        "appkey": "weather key",
+        "appkey": "Key ",
         "forecastRefreshInterval": 60,
-        "location": "47.111367, 9.963093",
+        "location": "45.111367, 9.363093",
         "weatherExceptionInterval": 5,
         "weatherRefreshInterval": 60,
         "URLtimeout": 5
@@ -115,6 +116,10 @@
     	},
     "telegram":{
     	"enabled":1,
-    	"token":"token telegram"
-    	}	   	
+    	"token":"token telegram",
+    	"pwd" : "pwd telegram",
+    	"timeout" : 100
+    	}	
+    	
+    	
 }
