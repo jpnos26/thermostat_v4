@@ -1631,13 +1631,15 @@ def dht_change(comando):
             dhtEnabled = 1
             Clock.schedule_once(dht_load, 3)
             reloadSchedule()
-        # print "dht Enabled"
+            umiditaLabel.color = 1,1,1,1
+            # print "dht Enabled"
         else:
             dhtEnabled = 0
             dhtSchedule = 0
             dht_label.text = ""
             Clock.unschedule(dht_load)
             reloadSchedule()
+            umiditaLabel.color = 0,0,0,0
         # print "dht Disabled"
         # print "change dht"	,x_pos	,y_pos
 
@@ -1959,8 +1961,10 @@ class ThermostatApp(App):
         thermostatUI.add_widget(versionLabel)
         thermostatUI.add_widget(btndht)
         thermostatUI.add_widget(btnmeteo)
+        
         if dhtEnabled:
             thermostatUI.add_widget(umiditaLabel)
+            
         menu_init = [" ", "Stato", "Reboot"]
         p = 325
         for index in range(3):
