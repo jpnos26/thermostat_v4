@@ -1,0 +1,396 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="refresh" content="60" />
+  <meta id="viewport" name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Thermostat Web Interface</title>
+  <link href="images/Apple_ThermostatIcon_120x120.png" rel="apple-touch-icon" sizes="120x120" />
+  <link href="images/Apple_ThermostatIcon_152x152.png" rel="apple-touch-icon" sizes="152x152" />
+  <link href="images/Apple_ThermostatIcon_180x180.png" rel="apple-touch-icon" sizes="180x180" />
+
+  <link rel="stylesheet" href="../css/jquery-ui.min.css">
+  <script src="../javascript/jquery-1.11.3.min.js"></script>
+  <script src="../javascript/jquery-ui.min.js"></script>
+ <script>
+	
+	$(document).ready(function() {
+		document.getElementById("progressbar-1").value=@@current@@;
+		document.getElementById("progressbar-2").value=@@temp@@;
+		document.getElementById("progressbar-3").value=@@temp_extern@@;
+		document.getElementById("temp").value=@@temp@@;
+		document.getElementById("setTemp1").innerHTML=@@temp@@;
+		heatCheck = new String ("@@heatChecked@@");
+		coolCheck = new String ("@@coolChecked@@");
+		holdCheck = new String ("@@holdChecked@@");
+		if (heatCheck == "checked"){
+			$("#heatButton").prop('checked',true);
+			}
+		else {
+			$("#heatButton").prop('checked',false);
+			}
+		if (coolCheck == "checked"){
+			$("#coolButton").prop('checked',true);
+			}
+		else {
+			$("#coolButton").prop('checked',false);
+			}
+		if (holdCheck == "checked"){
+			$("#holdButton").prop('checked',true);
+			}
+		else {
+			$("#holdButton").prop('checked',false);
+			}
+		jQuery('.toggle-nav').click(function(e) {
+                jQuery(this).toggleClass('active');
+                jQuery('.menu ul').toggleClass('active');
+ 
+                e.preventDefault();
+            });
+            $('#nav li').hover(
+                function () {
+            //mostra sottomenu
+                    $('ul', this).stop(true, true).delay(50).slideDown(100);
+                }, 
+                function () {
+                //nascondi sottomenu
+                    $('ul', this).stop(true, true).slideUp(200);        
+                }
+            );
+
+        });
+  </script>  
+  <script>  
+    
+    $(function() {
+	$("#progressbar-1").progressbar({
+	  max: 45,
+	  value: @@current@@
+	});
+        $("#progressbar-2").progressbar({
+            max: 26,
+            value: @@temp@@
+	});
+	 $("#progressbar-3").progressbar({
+	  max: 45,
+	  value:@@temp_extern@@
+	});
+
+	});
+	 $(function() {	
+
+	$( "input[type=checkbox]" ).each(function(){
+	  if( label = $( "label[for=" + $(this).attr('id') + "]" ) ) {
+		$(this).hide();
+		label.prepend( "" );
+		label.addClass( 'button' + ($(this).is( ":checked" ) ? ' checked' : '' ) );
+		label.hover( function(){ $(this).toggleClass( 'hover' ); });
+		label.click(function(){
+		$(this).toggleClass( 'checked' );
+		$( "input[id=" + $(this).attr('for') + "]" ).click( function(){ $(this).attr( "checked" ); });
+		relatedId = $(this).attr( "related" )
+		if( relatedId && $( "input[id=" + relatedId + "]" ).is( ":checked" ) && relatedId !="holdButton" ) {
+			 $( "label[for=" + relatedId + "]" ).removeClass( "checked" );
+			 $( "input[id=" + relatedId + "]" ).removeAttr( "checked" );
+		  }
+		if (relatedId =='holdButton' && $("#coolButton").prop("checked") == false && $("#heatButton").prop("checked")==false) {
+		  	$( "label[for=" + relatedId + "]" ).removeClass( "checked" );
+			$( "input[id=" + relatedId + "]" ).removeAttr( "checked" );	
+			 }
+		closeId = $(this).attr( "closehold" )
+		if (closeId == 'test'){
+			$( "label[for= holdButton]" ).removeClass( "checked" );
+			$( "input[id=holdButton]" ).removeAttr( "checked" );	
+			 }	
+		  	
+		});
+	  } 
+	});
+  });
+  
+function plusfunction(){
+    document.getElementById("plus").src ="../images/mobile_piu_hoover.png"
+    var testTemp = parseFloat(document.getElementById("setTemp1").innerHTML);
+    testTemp =testTemp + 0.1;
+    document.getElementById("setTemp1").innerHTML = testTemp.toFixed(1);
+    document.getElementById("temp").value = testTemp.toFixed( 1 ) ;
+    $("#progressbar-2").progressbar({ value: testTemp});
+    setTimeout("setplus()", 500);
+    };
+function minusfunction(){
+    document.getElementById("minus").src ="../images/mobile_meno_hoover.png"
+    var testTemp = parseFloat(document.getElementById("setTemp1").innerHTML);
+    testTemp =testTemp - 0.1;
+    document.getElementById("setTemp1").innerHTML = testTemp.toFixed(1);
+    document.getElementById("temp").value = testTemp.toFixed( 1 ) ;
+    $("#progressbar-2").progressbar({ value: testTemp});
+    setTimeout("setminus()", 500);
+    };
+function setminus(){
+    document.getElementById("minus").src ="../images/mobile_meno.png"
+    }
+function setplus(){
+    document.getElementById("plus").src ="../images/mobile_piu.png"
+    }
+var windowWidth = window.innerWidth;
+var windowHeight = window.innerHeight;
+
+//alert('viewport width is: '+ windowWidth + ' and viewport height is:' + windowHeight);
+  </script>
+  <style>
+	label.button {
+	  	display:inline-block; padding:2px 6px; margin:0px 2px 2px 0px;
+	  	color:#866; text-align:center; font-size:16px; line-height:30px;
+	  	background-color:#FFF;  border: 1px solid #000; cursor:pointer;
+	  	-webkit-border-radius:10px; -moz-border-radius:10px; border-radius:10px;
+		width:68px;height:40px;transition-duration:0.3s;display: inline-block;
+		
+	}
+	
+	label.button.hover { box-shadow:5px 5px 5px #833; }
+	label.button.checked.red { color:#000; background-color:#FF0000;  }
+	label.button.checked.green { color:#000; background-color:#00FF00;  }
+	label.button.checked.blue { color:#000; background-color:#3399FF;  }
+	label.button span {
+	  	display:inline-block; width:10px; height:10px; margin-right:1px;	
+	}
+	input[type="submit"]:hover{background-color: #ff0000; color:#ffffff}
+	input[type="submit"] {
+		height:45px;
+		width:30px;
+		color:#FF0000;
+		font-size:14px;
+		background-color:#b6bd88;
+		text-align:center;
+		valign:center;
+		-webkit-border-radius:10px; -moz-border-radius:10px; border-radius:10px;
+	}
+<!-- 	#set{width:50px;} -->
+/*----- Toggle Button -----*/
+.toggle-nav {
+    display:none;
+}
+ 
+/*----- Menu -----*/
+
+.progressBar {
+width:100%;
+margin:auto;
+position:relative;
+height:30px;
+line-height:30px;
+text-align:center;
+color:light-green;
+}
+.progressBarText {
+    color: blue;
+    position: absolute;
+    width: 50%;
+    left:25%;
+    font-size:16px
+}
+img {
+    vertical-align: middle;
+    horizonta-align:middle;
+    max-height:34px;
+    max-width: 34px;
+}
+.progressBar > .ui-progressbar-value {
+   background:#ffff99;
+}
+#nav {
+    margin:0;
+    padding:0;
+    list-style:none;
+}   
+ 
+#nav li {
+    float:left;
+    display:block;
+    width:120px;
+    height:40px;
+    background:#fff0b3;
+    position:relative;
+    z-index:500;
+    margin:2 1px;
+    border-bottom:2px solid #cccc00;
+    border-right:3px solid #cccc00;
+    border-radius:10px;
+    -webkit-transition: all 0.1s ease-in-out;
+        -moz-transition: all 0.1s ease-in-out;
+        -ms-transition: all 0.1s ease-in-out;
+        -o-transition: all 0.1s ease-in-out;
+        transition: all 0.1s ease-in-out;
+}
+#nav li.first {
+        -moz-border-radius:5px 0 0 5px;
+        -webkit-border-radius:5px 0 0 5px;
+    border-radius:5px 0 0 5px;
+    }
+#nav li.last {
+        -webkit-border-radius:0 5px 5px 0;
+    -moz-border-radius:0 5px 5px 0;
+        border-radius:0 5px 5px 0;
+    }
+#nav li li.last {
+        -webkit-border-radius:0 0 5px 5px;
+    -moz-border-radius:0 0 5px 5px;
+        border-radius:0 0 5px 5px;
+    }
+#nav li a {
+    display:block;
+    padding:8px 5px 0 5px;
+    font-weight:700;
+    height:23px;
+    text-decoration:none;
+    text-align:center;
+    color:#333;
+}
+#nav li a:hover {
+    color:#e60000;
+}
+#nav li li:hover {
+    -webkit-transform: translate(+10px,0);
+    }
+#nav a.selected {
+    color:#000080;
+}
+#nav ul {
+    position:absolute;
+    left:0;
+    display:none;
+    margin:0 0 0 -1px;
+    padding:0;
+    list-style:none;
+}
+#nav ul li {
+    width:120px;
+    float:left;
+    border-top:1px solid #fff;
+}
+#nav ul a {
+    display:block;
+    height:auto;
+    padding: 8px 5px;
+    color:#000080;
+}
+/* fix ie6, meglio inserirlo in un file .css separato */
+*html #nav ul {
+    margin:0 0 0 -2px;
+}
+
+/*----- Responsive -----*/
+
+ 
+
+  </style>
+</head>
+<body bgcolor = "#d0d0f0">
+	<div align="center">
+		<form method="post" action="set">
+		  	<table width="340px" rules="none" cellpadding="10" cellspacing="0" >
+				<tr>
+					<td width = "55%" align="center" style="color:#111111"><b>Thermostat @@version@@</b><br>@@dt@@</td>
+										
+					<!--	<div style=" width:140px; height:60px;color:#000000; background-color:#fff"></div>
+					</td>	-->			
+				</tr>
+				<tr>
+				<input type="hidden" id="temp" name="temp" readonly style=" color:#ff0000; font-weight:bold; font-size:x-large; width: 2em; " size="4" >
+				</tr>
+			</table>
+			<table  width="340px" style="align:0 auto; background-color:#fff5cc;border-radius:10px;" border="0px solid">
+				<tr><td width="55%">
+				<ul id="nav">	
+                                    <li><a href="#" class="selected">Home</a>
+    					<ul >
+        					<li><a href="/schedule">Schedule</a></li>
+        					<li><a href="/graph">Grafico</a></li>
+        					<li style="@@displaydht@@"><a href="/redirect/99" @@dhtsubmit@@ >Dht</a></li>
+        					<li style="@@displayir@@"><a href="irdht" @@dhtIrsubmit@@ >Dht Ir</a></li>
+        					<li style="@@displayzone@@"><a href="zonedht" @@dhtZonesubmit@@ >Dht Zone</a></li>
+    					</ul>    				
+                                </ul>
+                                </td>
+                                    <td width ="45%">@@status@@</td>
+                                </tr>
+			</table>
+			<table width="340px" rules="none" cellpadding="10" cellspacing="0" >
+				<tr>					
+                                    <td colspan= "3">
+                                    <div  width="90%" align="center" style="font-size:16px;">
+                                        <b>- Temp in  -</b>
+                                    </div>
+                                </tr>
+                                <tr>
+                                    <td colspan= "3">
+                                        <div id="progressbar-1" class="progressBar">
+                                            <span class="progressBarText" id="pbt1"><b>@@current@@</b></span>
+                                        </div>
+                                    </td>
+				</tr>
+                                <tr>
+                                    <td colspan= "3">
+                                        <div  align="center" style="font-size:16px; ">
+                                           <b>  - Set Temp - </b>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="10%" align="right">
+                                        <img id="minus" name="minus"  onClick="minusfunction();" src="../images/mobile_meno.png" >
+                                    </td>
+                                    <td width="80%>" align="center">
+                                             <div id="progressbar-2" class="progressBar">
+                                            <span class="progressBarText" id="pbt2"><b><label id="setTemp1" name ="setTemp1"></b></label></span>
+                                        </div>
+                                    </td>
+                                    <td width="10%" align="center">
+                                        <img id="plus" name="plus" onClick="plusfunction();" src="../images/mobile_piu.png" >
+                                    </td>
+				</tr>
+				<tr>
+                                    <td colspan= "3">
+                                        <div  width="90%"  align="center" style="font-size:16px">
+                                            <b> - Temp out - </b>
+                                        </div>
+                                    </td>
+                                </tr>
+				<tr>
+                                    <td colspan = "3">
+                                             <div id="progressbar-3" class="progressBar">
+                                            <span class="progressBarText" id="pbt3"><b>@@temp_extern@@</b></span>
+                                        </div>
+                                    </td>
+				</tr>
+			</table>
+			<table width="350px" rules="none"   >
+				<tr height="10px"></tr>
+				<tr>				
+				<td align="center" valign="center" width="29%" >
+					<label for="heatButton" related="coolButton" closehold="test" class="red">Inverno</label>
+					<input type="checkbox" id="heatButton" closehold="test" related="heatButton" name="heat" value="on" />&nbsp;
+				</td>
+				<td align="center" valign="center" width="29%" >
+					<label for="coolButton" related="heatButton" closehold="test" class="blue">Estate</label>
+					<input type="checkbox" id="coolButton" closehold="test" related="coolButton" name="cool" value="on" />&nbsp;
+				</td>
+							
+				<td align="center" valign="center"  width="29%">
+					<label for="holdButton" related="holdButton" class="green">Manuale</label>
+					<input type="checkbox"  id="holdButton" related="holdButton" name="hold" value="on"  />
+				</td>
+				<td  valign="center" width="13%" style="vertical-align:top;">
+					<input id="set"  type="submit" value="Set" >
+							
+				</tr>
+			</table>
+				
+			
+		</form>
+	</div>
+	 
+</body>
+</html>
