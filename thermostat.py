@@ -69,7 +69,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from urllib2 import URLError
 from kivy.animation import Animation
 from kivy.core.window import Window
-
+from functools import partial
 
 
 ##############################################################################
@@ -92,8 +92,8 @@ import schedule
 try:
     import RPi.GPIO as GPIO
 except ImportError:
-	import FakeRPi.GPIO as GPIO
-	print ("No RPI used")
+    import FakeRPi.GPIO as GPIO
+    print ("No RPI used")
 try:
     import Adafruit_DHT
 except ImportError:
@@ -425,6 +425,7 @@ if telegramSend == 1:
     from telepot.loop import MessageLoop
     telegramTimeout = 60 if not (settings.exists("thermostat")) else settings.get("telegram")["timeout"]
     testTimeout = 0
+    
 if dhtIr_number > 0:
     dhtIRLabel = {}
     dhtIR = {}
@@ -887,10 +888,18 @@ def testDhtLan(c, comando):
 ##########################################################################
 ## Telegram Section
 #########################################################################
-
-def closeTelegram(dt):
+def logTermostat(errore):
+    out_file = open(("./log/" + "telegramlog.csv"), "a")
+    out_file.write(time.strftime("%Y/%m/%d %H:%M:%S", time.localtime()) + ", " + errore + "\n")
+    out_file.close()
+    
+def closeTelegram(chat_id,dt):
     global telegramTimeout,chatIdTest,testTimeout
-    bot.sendMessage(chatIdTest, "Timeout - Bot disabilitato.... Alla Prossima")
+    if testTimeout > 0:
+        try:
+            bot.sendMessage(chat_id, "Bot disabilitato.... Stand bye")
+        except telepot.exception.TelegramError:
+            logTermostat("Error during Closing..")
     testTimeout = 0
     chatIdTest = 0
     
@@ -899,73 +908,78 @@ if telegramSend == 1:
     with thermostatLock:
         def handle(msg):
             global telegramTimeout, chatIdTest,testTimeout
-            chat_id = msg['chat']['id']
-            command = msg['text']
-            #print 'Got command: %s' % command
-            #print chat_id
-            if command == "/"+ settings.get("telegram")["pwd"] and chatIdTest == 0:
-                chatIdTest = chat_id
-                testTimeout = 100
-                Clock.schedule_once(closeTelegram, telegramTimeout)
-                bot.sendMessage(chat_id, "Pwd OK - Bot Abilitato per id : "+ str(chatIdTest)+" per : "+str(telegramTimeout)+"sec")
-            else:
-                if chatIdTest == chat_id and testTimeout > 0:
-                    telegramCommand(command,chat_id)
-                
+            try:
+                chat_id = msg['chat']['id']
+                command = msg['text']
+                #print 'Got command: %s' % command
+                #print chat_id
+                if command == "/"+ settings.get("telegram")["pwd"] and chatIdTest == 0:
+                    chatIdTest = chat_id
+                    testTimeout = 100
+                    Clock.schedule_once(partial(closeTelegram,chat_id), telegramTimeout)
+                    bot.sendMessage(chat_id, "Pwd OK - Bot Abilitato per id : "+ str(chatIdTest)+" per : "+str(telegramTimeout)+"sec")
+                else:
+                    if chatIdTest == chat_id and testTimeout > 0:
+                        telegramCommand(command,chat_id)
+            except telepot.exception.TelegramError:
+                logTermostat("Error during Pwd access..")
 def telegramCommand(command,chat_id):
-    if command == "/ip":
-        f = get("https://api.ipify.org").text
-        look_ip = str(f)
-        if cherrypy.server.socket_port == 443:
-            bot.sendMessage(chat_id, "Da Internet Thermostat su: https://" + look_ip + "/")
-        else:
-            bot.sendMessage(chat_id, "Da Internet Thermostat su: http://" + look_ip + "/")
-        ip_int = str(get_ip_address())
-        if cherrypy.server.socket_port == 443:
-            bot.sendMessage(chat_id, "Da Lan Thermostat su: https://" + ip_int + "/")
-        else:
-            bot.sendMessage(chat_id, "Da Lan Thermostat su: http://" + ip_int + "/")    
-    elif command == "/stato":
-        bot.sendMessage(chat_id, test_ip)
-    elif command == "/time":
-        bot.sendMessage(chat_id, str(datetime.datetime.now().strftime("%H:%M -- %d/%m/%Y")))
-    elif command[:8] == "/settemp":
-        tempe_set = command[command.index(":")+1:]
-        #print str(tempe_set),str(setTemp)
-        settaTemp(float(tempe_set))
-        change_system_settings()
-        bot.sendMessage(chat_id, "Set Temp : "+str(setTemp))
-        bot.sendMessage(chat_id, test_ip)
-    elif command == "/help":
-        risposta = "/ip : leggi ip Thermostat \n/time : leggi ora Thermostat \n/stato : leggi lo stato di Thermostat \n/settemp:20.0 : setta Temperatura \n/inverno : setta Sistema per inverno \n/estate : setta Sistema per Estate \n/manuale : prima settare Estate o Inverno quindi setta Il Funzionamento Manuale \n/off : Setta NoIce \n/close : Chiude Bot in questa Connessione\n/help : leggi i comandi possibili"
-        bot.sendMessage(chat_id,risposta)
-    elif command == "/inverno":
-        setControlState(heatControl, "down")
-        holdControl.state="normal"
-        change_system_settings()
-        bot.sendMessage(chat_id,"Settato Inverno")
-        bot.sendMessage(chat_id, test_ip)
-    elif command == "/estate":
-        setControlState(coolControl, "down")
-        holdControl.state="normal"
-        change_system_settings()
-        bot.sendMessage(chat_id,"Settato Estate")
-        bot.sendMessage(chat_id, test_ip)
-    elif command == "/manuale":
-        setControlState(holdControl, "down")
-        change_system_settings()
-        bot.sendMessage(chat_id,"Settato Manuale")
-        bot.sendMessage(chat_id, test_ip)
-    elif command =="/off":
-        holdControl.state="normal"
-        coolControl.state="normal"
-        setControlState(heatControl, "normal")
-        change_system_settings()
-        bot.sendMessage(chat_id, test_ip)
-    elif command == "/close":
-        Clock.schedule_once(closeTelegram, 0)
-        bot.sendMessage(chat_id, "Bot disabilitato.... Alla Prossima")
-
+    try:
+        if command == "/ip":
+            f = get("https://api.ipify.org").text
+            look_ip = str(f)
+            if cherrypy.server.socket_port == 443:
+                bot.sendMessage(chat_id, "Da Internet Thermostat su: https://" + look_ip + "/")
+            else:
+                bot.sendMessage(chat_id, "Da Internet Thermostat su: http://" + look_ip + "/")
+            ip_int = str(get_ip_address())
+            if cherrypy.server.socket_port == 443:
+                bot.sendMessage(chat_id, "Da Lan Thermostat su: https://" + ip_int + "/")
+            else:
+                bot.sendMessage(chat_id, "Da Lan Thermostat su: http://" + ip_int + "/")
+        elif command == "/stato":
+            bot.sendMessage(chat_id, test_ip)
+        elif command == "/time":
+            bot.sendMessage(chat_id, str(datetime.datetime.now().strftime("%H:%M -- %d/%m/%Y")))
+        elif command[:8] == "/settemp":
+            tempe_set = command[command.index(":")+1:]
+            #print str(tempe_set),str(setTemp)
+            settaTemp(float(tempe_set))
+            change_system_settings()
+            bot.sendMessage(chat_id, "Set Temp : "+str(setTemp))
+            bot.sendMessage(chat_id, test_ip)
+        elif command == "/help":
+            risposta = "/ip : leggi ip Thermostat \n/time : leggi ora Thermostat \n/stato : leggi lo stato di Thermostat \n/settemp:20.0 : setta Temperatura \n/inverno : setta Sistema per inverno \n/estate : setta Sistema per Estate \n/manuale : prima settare Estate o Inverno quindi setta Il Funzionamento Manuale \n/off : Setta NoIce \n/close : Chiude Bot in questa Connessione\n/help : leggi i comandi possibili"
+            bot.sendMessage(chat_id,risposta)
+        elif command == "/inverno":
+            setControlState(heatControl, "down")
+            holdControl.state="normal"
+            change_system_settings()
+            bot.sendMessage(chat_id,"Settato Inverno")
+            bot.sendMessage(chat_id, test_ip)
+        elif command == "/estate":
+            setControlState(coolControl, "down")
+            holdControl.state="normal"
+            change_system_settings()
+            bot.sendMessage(chat_id,"Settato Estate")
+            bot.sendMessage(chat_id, test_ip)
+        elif command == "/manuale":
+            setControlState(holdControl, "down")
+            change_system_settings()
+            bot.sendMessage(chat_id,"Settato Manuale")
+            bot.sendMessage(chat_id, test_ip)
+        elif command =="/off":
+            holdControl.state="normal"
+            coolControl.state="normal"
+            setControlState(heatControl, "normal")
+            change_system_settings()
+            bot.sendMessage(chat_id, test_ip)
+        elif command == "/close":
+            Clock.unschedule(closeTelegram)
+            Clock.schedule_once(partial(closeTelegram,chat_id), 0.4)
+            bot.sendMessage(chat_id, "Disabilitazione Bot......")
+    except telepot.exception.TelegramError:
+        logTermostat("Error during Command: "+command)
 
 ##############################################################################
 #                                                                            #
@@ -999,7 +1013,7 @@ def setControlState(control, state):
 
         elif coolControl.state == "normal" and heatControl.state == "normal":
             tempStep = 0.5 if not (settings.exists("thermostat")) else settings.get("thermostat")["tempStep"]
-          
+
 
         # if state == "normal":
         #	control.background_color = controlColours[ "normal" ]
@@ -1011,14 +1025,14 @@ def setControlState(control, state):
 
 
 coolControl = ToggleButton(text="[b]       Estate  [/b]",
-                           markup=True,
-                           size_hint=(None, None),
-                           font_size="28sp",
-                           border=(0, 0, 0, 0),
-                           background_normal="web/images/button_1.png",
-                           background_down="web/images/button_21.png",
-                           color=(1, 1, 1, 1)
-                           )
+						   markup=True,
+						   size_hint=(None, None),
+						   font_size="28sp",
+						   border=(0, 0, 0, 0),
+						   background_normal="web/images/button_1.png",
+						   background_down="web/images/button_21.png",
+						   color=(1, 1, 1, 1)
+						   )
 
 heatControl = ToggleButton(text="[b]         Inverno  [/b]",
                            markup=True,
@@ -2324,7 +2338,6 @@ class AuthController(object):
             self.on_logout(username)
         raise cherrypy.HTTPRedirect(from_page or "/")
 
-#from auth import AuthController, require, member_of, name_is
 
 class WebInterface(object):
         
@@ -2382,8 +2395,55 @@ class WebInterface(object):
                 html = html.replace("@@displaydht@@", "display:none")
 
         return html
+    
+    @cherrypy.expose
+    @require()
+    def mobile(self):
+        log(LOG_LEVEL_INFO, CHILD_DEVICE_WEBSERVER, MSG_SUBTYPE_TEXT,"Served thermostat.html to: " + cherrypy.request.remote.ip)
+
+        file = open("web/html/thermostat_mobile.html", "r")
+
+        html = file.read()
+
+        file.close()
+
+        with thermostatLock:
+
+            html = html.replace("@@version@@", str(THERMOSTAT_VERSION))
+            html = html.replace("@@temp@@", str(setTemp))
+            html = html.replace("@@current@@", str(currentTemp))
+            html = html.replace("@@minTemp@@", str(minTemp))
+            html = html.replace("@@maxTemp@@", str(maxTemp))
+            html = html.replace("@@tempStep@@", str(tempStep))
+            html = html.replace("@@temp_extern@@", str(temp_vis))
+
+            status = statusLabel.text.replace("[b]", "<b>").replace("[/b]", "</b>").replace("[/color]",
+                                                                                            "</font>").replace(
+                "[color=ff3333]", "<font color=\"#ff3333\">").replace("[i]", "<i>").replace("[/i]", "</i>").replace(
+                "\n", "<br>").replace("[color=#5F81F1]", "<font color=\"#5F81F1\">")
+            status = status.replace("[color=00ff00]", '<font color="red">').replace("[/color]", '</font>')
+
+            html = html.replace("@@status@@", status)
+            html = html.replace("@@dt@@", dateLabel.text.replace("[b]", "<b>").replace("[/b]",
+                                                                                       "</b>") + " - " + timeLabel.text.replace(
+                "[b]", "<b>").replace("[/b]", "</b>"))
+            html = html.replace("@@heatChecked@@", "checked" if heatControl.state == "down" else "no")
+            html = html.replace("@@coolChecked@@", "checked" if coolControl.state == "down" else "no")
+            html = html.replace("@@holdChecked@@", "checked" if holdControl.state == "down" else "no")
+            html = html.replace("@@dhtIrsubmit@@", "style='display:none'" if dhtIr_number == 0 else "")
+            html = html.replace("@@dhtZonesubmit@@", "style='display:none'" if dhtIr_number == 0 else "")
+            html = html.replace("@@dhtsubmit@@", "style='display:none'" if dhtEnabled == 0 else "")
+            if dhtZone_number == 0:
+                html = html.replace("@@displayzone@@", "display:none")
+            if dhtIr_number == 0:
+                html = html.replace("@@displayir@@", "display:none")
+            if dhtEnabled == 0:
+                html = html.replace("@@displaydht@@", "display:none")
+
+        return html
 
     @cherrypy.expose
+    @require()
     def set(self, temp, heat="off", hold="off", cool="off"):
         global setTemp, setLabel, coolControl, heatControl, holdControl
 
@@ -2718,7 +2778,10 @@ def main():
     # webThread.start()
     ####Start thread Telegram
     if telegramSend == 1: 
-        MessageLoop(bot, handle).run_as_thread()
+        try:
+            MessageLoop(bot, handle).run_as_thread()
+        except telepot.exception.TelegramError:
+            logTermostat("Telegram error on start.....")
     # Start Thermostat UI/App
     ThermostatApp().run()
 
