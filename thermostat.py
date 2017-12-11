@@ -1544,17 +1544,17 @@ def load_temp():
 
 def update_set_temp(control):
     with thermostatLock:
-        global setTemp, tempStep
+        global setTemp, tempStep,maxTemp,minTemp
         priorTemp = setTemp
         if control is plusControl:
             setTemp = priorTemp + tempStep
+            if setTemp >= maxTemp:
+                setTemp = maxTemp
         if control is minusControl:
             setTemp = priorTemp - tempStep
-
-        if setTemp >= maxTemp or setTemp <= minTemp:
-            setTemp = priorTemp
+            if setTemp <= minTemp:
+                setTemp = minTemp
         setLabel.text = "[b]" + str(round(setTemp, 1)) + "[/b]"
-
         if heatControl.state == "down":
             Clock.schedule_once(dhtZoneSend, 1)
         if coolControl.state == "down":
@@ -1861,9 +1861,6 @@ class menuScreen(Screen):
                 self.manager.current = "thermostatUI"
                 log(LOG_LEVEL_DEBUG, CHILD_DEVICE_SCREEN, MSG_SUBTYPE_TEXT, "Full")
         return True
-
-
-altStatusLabel
 
 
 ##############################################################################
@@ -2325,8 +2322,6 @@ class AuthController(object):
 		
         return html %locals()
 
-    
-    
     @cherrypy.expose
     def login(self, username=None, password=None, from_page="/"):
         if username is None or password is None:
@@ -2374,7 +2369,7 @@ class WebInterface(object):
         file.close()
 
         with thermostatLock:
-
+            print "set Temperature" ,str(setTemp)
             html = html.replace("@@version@@", str(THERMOSTAT_VERSION))
             html = html.replace("@@temp@@", str(setTemp))
             html = html.replace("@@current@@", str(currentTemp))
