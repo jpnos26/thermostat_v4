@@ -205,7 +205,7 @@ MSG_SUBTYPE_DHT = "DhtWifi"
 #                                                                            #
 ##############################################################################
 
-THERMOSTAT_VERSION = "4.1.1"
+THERMOSTAT_VERSION = "4.1.2"
 
 # Debug settings
 
@@ -1088,7 +1088,7 @@ minusControl = Button(text="",
 
 
 def get_status_string():
-    global test_ip
+    global test_ip,sched
     with thermostatLock:
         sched = "None"
         temperature = 0
@@ -1429,9 +1429,12 @@ def change_system_settings():
             Clock.unschedule(csvSaver)
             csvSaver = Clock.schedule_once(save_graph, 1)
             log(LOG_LEVEL_STATE, CHILD_DEVICE_HEAT, MSG_SUBTYPE_BINARY_STATUS, "1" if GPIO.input(coolPin) else "0")
-        if settings.get("thermostat")["checkPin"] == 1:
-            print "Gpio heat : " ,str(GPIO.input(heatPin))," - Gpio cool : ",str(GPIO.input(coolPin)) , " - pirPin : ",str(GPIO.input(pirPin)), " - Light Pin :",str(GPIO.input(lightPin))
-            print "Stato check Dht  - DhtIR: ",dhtCheckIr," - dhtZone : ",dhtCheckZone," - dhtCheckRele : ",dhtCheckRele 
+        try:
+            if settings.get("thermostat")["checkPin"] == 1:
+                print "Gpio heat : " ,str(GPIO.input(heatPin))," - Gpio cool : ",str(GPIO.input(coolPin)) , " - pirPin : ",str(GPIO.input(pirPin)), " - Light Pin :",str(GPIO.input(lightPin))
+                print "Stato check Dht  - DhtIR: ",dhtCheckIr," - dhtZone : ",dhtCheckZone," - dhtCheckRele : ",dhtCheckRele 
+        except:
+            log(LOG_LEVEL_STATE, CHILD_DEVICE_HEAT, MSG_SUBTYPE_BINARY_STATUS, "print pin error.....")
 
 # This callback will be bound to the touch screen UI buttons:
 
@@ -1458,11 +1461,11 @@ def control_callback(control):
                 reloadSchedule()
             elif control.state == "down" and heatControl.state == "down":
                 reloadSchedule()
-                
+
             elif control.state == "down" and coolControl.state == "down":
                 reloadSchedule()
             elif control.state == "normal":
-            
+
                 reloadSchedule()
         elif control is coolControl:
             if dhtIr_number > 0:
@@ -1597,10 +1600,15 @@ def check_pir(pin):
 def save_graph(dt):
     # save graph
     # conversione heatpin in temperatura 10=off 12=on
-    global csvSaver
+    global csvSaver,sched
     global csvTimeout
     Clock.unschedule(csvSaver)
     switchTemp = 0
+    if sched == "No Ice":
+            graphtemperature = settings.get("thermostat")["tempice"]
+    else:
+            graphtemperature = setTemp
+            
     if GPIO.input(heatPin) == 0:
         switchTemp = 12
     else:
@@ -1611,7 +1619,7 @@ def save_graph(dt):
 
         # scrivo il file csv con i dati
     out_file = open(("./web/graph/" + "thermostat.csv"), "a")
-    out_file.write(time.strftime("%Y/%m/%d %H:%M:%S", time.localtime()) + ", " + str(setTemp) + ", " + str(
+    out_file.write(time.strftime("%Y/%m/%d %H:%M:%S", time.localtime()) + ", " + str(graphtemperature) + ", " + str(
         currentTemp) + ", " + str(switchTemp) + "\n")
     out_file.close()
     timeInit = time.time()
@@ -2389,7 +2397,7 @@ class WebInterface(object):
             html = html.replace("@@coolChecked@@", "checked" if coolControl.state == "down" else "no")
             html = html.replace("@@holdChecked@@", "checked" if holdControl.state == "down" else "no")
             html = html.replace("@@dhtIrsubmit@@", "style='display:none'" if dhtIr_number == 0 else "")
-            html = html.replace("@@dhtZonesubmit@@", "style='display:none'" if dhtIr_number == 0 else "")
+            html = html.replace("@@dhtZonesubmit@@", "style='display:none'" if dhtZone_number == 0 else "")
             html = html.replace("@@dhtsubmit@@", "style='display:none'" if dhtEnabled == 0 else "")
             if dhtZone_number == 0:
                 html = html.replace("@@displayzone@@", "display:none")
@@ -2435,7 +2443,7 @@ class WebInterface(object):
             html = html.replace("@@coolChecked@@", "checked" if coolControl.state == "down" else "no")
             html = html.replace("@@holdChecked@@", "checked" if holdControl.state == "down" else "no")
             html = html.replace("@@dhtIrsubmit@@", "style='display:none'" if dhtIr_number == 0 else "")
-            html = html.replace("@@dhtZonesubmit@@", "style='display:none'" if dhtIr_number == 0 else "")
+            html = html.replace("@@dhtZonesubmit@@", "style='display:none'" if dhtZone_number == 0 else "")
             html = html.replace("@@dhtsubmit@@", "style='display:none'" if dhtEnabled == 0 else "")
             if dhtZone_number == 0:
                 html = html.replace("@@displayzone@@", "display:none")
