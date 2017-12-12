@@ -119,7 +119,12 @@
     	"token":"token telegram"                                   // Inserire token fornito da botFather
     	"pwd" : "123",                                             // pwd per accesso al bot
     	"timeout" : 100                                            // timeout dell'accesso al bot
-    	}	
+    	},
+    "upnp":{
+        "enabled":1,                                                // abilita uso UPNP ....abilitare UPNP anche nel Router
+        "ext_port":3400,                                            // Porta esterna da raggiungere da internet
+        "time":100                                                  // tempo in secondi nel quale la porta rimane aperta
+        }
     	
     	
 }
