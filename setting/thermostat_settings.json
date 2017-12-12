@@ -119,7 +119,10 @@
     	"token":"token telegram",
     	"pwd" : "pwd telegram",
     	"timeout" : 100
-    	}	
-    	
-    	
+    	},
+     "upnp":{
+        "enabled":1,
+        "ext_port":3400,
+        "time":100
+        }    	
 }
