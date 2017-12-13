@@ -101,7 +101,7 @@ except ImportError:
 try:
     import Adafruit_DHT
 except ImportError:
-    import FakeRPi.GPIO as GPIO
+    print ("No DHT Library")
 ##############################################################################
 #                                                                            #
 #       Sensor Imports                                                       #
@@ -209,7 +209,7 @@ MSG_SUBTYPE_DHT = "DhtWifi"
 #                                                                            #
 ##############################################################################
 
-THERMOSTAT_VERSION = "4.1.3"
+THERMOSTAT_VERSION = "4.2.0"
 
 # Debug settings
 
@@ -222,8 +222,7 @@ thermostatLock = threading.RLock()
 weatherLock = threading.Lock()
 scheduleLock = threading.RLock()
 dhtLock = threading.RLock()
-tempLock = threading.RLock()
-setLock = threading.RLock()
+
 
 # Thermostat persistent settings
 
@@ -423,6 +422,20 @@ dhtCheckRele = 0
 dhtCheckZone = 0
 dhtCheckIce = 0
 
+# GPIO Pin setup and utility routines:
+
+heatPin = 27 if not (settings.exists("thermostat")) else settings.get("thermostat")["heatPin"]
+lightPin = 24 if not (settings.exists("thermostat")) else settings.get("thermostat")["lightPin"]
+coolPin = 18 if not (settings.exists("thermostat")) else settings.get("thermostat")["coolPin"]
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(heatPin, GPIO.OUT)
+GPIO.output(heatPin, GPIO.HIGH)
+GPIO.setup(lightPin, GPIO.OUT)
+GPIO.output(lightPin, GPIO.HIGH)
+GPIO.setup(coolPin, GPIO.OUT)
+GPIO.output(coolPin, GPIO.HIGH)
+
 #####Framework Telegram
 if telegramSend == 1:
     import telepot
@@ -502,19 +515,6 @@ log(LOG_LEVEL_INFO, CHILD_DEVICE_NODE, MSG_SUBTYPE_CUSTOM + "/settings/pir/ignor
 log(LOG_LEVEL_INFO, CHILD_DEVICE_NODE, MSG_SUBTYPE_CUSTOM + "/settings/pir/ignoreTo", str(pirIgnoreToStr),
     timestamp=False)
 
-# GPIO Pin setup and utility routines:
-
-heatPin = 23 if not (settings.exists("thermostat")) else settings.get("thermostat")["heatPin"]
-lightPin = 24 if not (settings.exists("thermostat")) else settings.get("thermostat")["lightPin"]
-coolPin = 27 if not (settings.exists("thermostat")) else settings.get("thermostat")["coolPin"]
-
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(heatPin, GPIO.OUT)
-GPIO.output(heatPin, GPIO.HIGH)
-GPIO.setup(lightPin, GPIO.OUT)
-GPIO.output(lightPin, GPIO.HIGH)
-GPIO.setup(coolPin, GPIO.OUT)
-GPIO.output(coolPin, GPIO.HIGH)
 
 if pirEnabled:
     GPIO.setup(pirPin, GPIO.IN)
@@ -1010,7 +1010,7 @@ controlColours = {
 
 def setControlState(control, state):
     global setTemp, tempStep, dhtIr_number
-    with setLock:
+    with thermostatLock:
         control.state = state
         if control == coolControl and state == "down":
             if dhtIr_number > 0:
@@ -1690,11 +1690,7 @@ def control_callback(control):
 # Check the current sensor temperature
 
 def check_sensor_temp(dt):
-    load_temp()
-
-
-def load_temp():
-    with tempLock:
+    with thermostatLock:
         global currentTemp, priorCorrected
         global tempSensor, dhtTemp, openDoor, openDoorCheck
         correctedTemp = 20
@@ -1834,23 +1830,24 @@ def save_graph(dt):
 def dht_change(comando):
     global dhtEnabled, dhtSchedule
     global setTemp
-    if heatControl.state == "down":
-        setLabel.color = (1, 0.1, 0.1, 1)
-        if dhtEnabled == 0 and settings.get("dhtext")["dhtEnabled"] == 1:
-            dhtEnabled = 1
-            Clock.schedule_once(dht_load, 3)
-            reloadSchedule()
-            umiditaLabel.color = 1,1,1,1
-            # print "dht Enabled"
-        else:
-            dhtEnabled = 0
-            dhtSchedule = 0
-            dht_label.text = ""
-            Clock.unschedule(dht_load)
-            reloadSchedule()
-            umiditaLabel.color = 0,0,0,0
-        # print "dht Disabled"
-        # print "change dht"	,x_pos	,y_pos
+    with thermostatLock:
+        if heatControl.state == "down":
+            setLabel.color = (1, 0.1, 0.1, 1)
+            if dhtEnabled == 0 and settings.get("dhtext")["dhtEnabled"] == 1:
+                dhtEnabled = 1
+                Clock.schedule_once(dht_load, 3)
+                reloadSchedule()
+                umiditaLabel.color = 1,1,1,1
+                # print "dht Enabled"
+            else:
+                dhtEnabled = 0
+                dhtSchedule = 0
+                dht_label.text = ""
+                Clock.unschedule(dht_load)
+                reloadSchedule()
+                umiditaLabel.color = 0,0,0,0
+                # print "dht Disabled"
+                # print "change dht"	,x_pos	,y_pos
 
 
 # Minimal UI Display functions and classes
@@ -1867,14 +1864,15 @@ def show_minimal_ui(dt):
 
 
 def animationMinimal(dt):
-    checkPos = altStatusLabel.pos
-    # print checkPos
-    anim = Animation(pos=(150, 150), t='linear', d=30)
-    anim += Animation(pos=(700, 360), t='linear', d=30)
-    anim += Animation(pos=(150, 360), t='linear', d=30)
-    anim += Animation(pos=(700, 150), t='linear', d=30)
-    anim.repeat = True
-    anim.start(altStatusLabel)
+    with thermostatLock:
+        checkPos = altStatusLabel.pos
+        # print checkPos
+        anim = Animation(pos=(150, 150), t='linear', d=30)
+        anim += Animation(pos=(700, 360), t='linear', d=30)
+        anim += Animation(pos=(150, 360), t='linear', d=30)
+        anim += Animation(pos=(700, 150), t='linear', d=30)
+        anim.repeat = True
+        anim.start(altStatusLabel)
 
 
 def light_off(dt):
@@ -2974,11 +2972,6 @@ def main():
     schedThread = threading.Thread(target=startScheduler)
     schedThread.daemon = True
     schedThread.start()
-
-    # Start Load Temperature
-    webThread = threading.Thread(target=load_temp)
-    webThread.daemon = True
-    webThread.start()
 
     # setControlState
     # webThread = threading.Thread( target=setControlState( control, state ) )
