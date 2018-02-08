@@ -1560,17 +1560,16 @@ def change_system_settings():
                 dhtCheckIce = 0
                 dhtZoneSend(0.5)
                 dhtZoneRead(0.5)
-                if dhtRele == 1:
-                    dhtReleSend("releOFF")
-                    dhtReleRead(0.5)
             if setTemp >= currentTemp + tempHysteresis or dhtCheckZone == 3:
-                if dhtRele == 1 and dhtCheckRele == 200:
+                if dhtRele == 1 and dhtCheckRele <= 200:
                     dhtReleSend("releON")
+                    dhtReleRead(0.5)
                 GPIO.output(heatPin, GPIO.LOW)
                 GPIO.output(coolPin, GPIO.HIGH)
             elif setTemp <= currentTemp:
-                if dhtRele == 1 and dhtCheckRele == 201:
+                if dhtRele == 1 and dhtCheckRele >= 201:
                     dhtReleSend("releOFF")
+                    dhtReleRead(0.5)
                 GPIO.output(heatPin, GPIO.HIGH)
                 GPIO.output(coolPin, GPIO.HIGH)
         elif coolControl.state == "down":
@@ -1598,17 +1597,16 @@ def change_system_settings():
                 dhtCheckIr = 0
                 dhtZoneSend(0.5)
                 dhtZoneRead(0.5)
-                if dhtRele == 1:
-                    dhtReleSend("releOFF")
-                    dhtReleRead(0.5)
             if setice >= currentTemp + tempHysteresis or dhtCheckZone == 3:
-                if dhtRele == 1 and dhtCheckRele == 200:
+                if dhtRele == 1 and dhtCheckRele <= 200:
                     dhtReleSend("releON")
+                    dhtReleRead(0.5)
                 GPIO.output(heatPin, GPIO.LOW)
                 GPIO.output(coolPin, GPIO.HIGH)
             elif setice <= currentTemp:
-                if dhtRele == 1 and dhtCheckRele == 201:
+                if dhtRele == 1 and dhtCheckRele >= 201:
                     dhtReleSend("releOFF")
+                    dhtReleRead(0.5)
                 GPIO.output(heatPin, GPIO.HIGH)
                 GPIO.output(coolPin, GPIO.HIGH)
 
