@@ -60,10 +60,10 @@
     },
     "web": {
         "host": "discover",
-        "port": 443,
+        "port": 80,
         "key" :"/etc/ssl/cherrypy/cherrypy.key",
         "cert":"/etc/ssl/cherrypy/cherrypy.crt",
-        "auth": 1
+        "auth": 0
     },
     "dht_zone":{
     	"number":0,
@@ -115,13 +115,13 @@
     	"rele_timeout": 20
     	},
     "telegram":{
-    	"enabled":1,
+    	"enabled":0,
     	"token":"token telegram",
     	"pwd" : "pwd telegram",
     	"timeout" : 100
     	},
      "upnp":{
-        "enabled":1,
+        "enabled":0,
         "ext_port":3400,
         "time":100
         }    	
